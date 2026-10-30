@@ -1,5 +1,7 @@
 import pytest
-from app.core.database import SessionLocal
+from app.core.database import SessionLocal, Base, engine
+import app.models
+from app.services.seed_data import seed_database
 from app.schemas.contracts import (
     WorkflowTask,
     TaskDAG,
@@ -16,7 +18,9 @@ from app.services.workflow_engine import workflow_engine
 
 @pytest.fixture(scope="module")
 def db():
+    Base.metadata.create_all(bind=engine)
     session = SessionLocal()
+    seed_database(session)
     yield session
     session.close()
 

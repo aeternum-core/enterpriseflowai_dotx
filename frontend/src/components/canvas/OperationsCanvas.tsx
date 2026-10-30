@@ -389,3 +389,4 @@ export const OperationsCanvas: React.FC<OperationsCanvasProps> = ({ workflow, on
     </div>
   );
 };
+

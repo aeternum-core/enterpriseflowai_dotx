@@ -120,3 +120,4 @@ class RecoveryResult(BaseModel):
     remedy_description: str
     telemetry: Dict[str, Any] = Field(default_factory=dict)
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+

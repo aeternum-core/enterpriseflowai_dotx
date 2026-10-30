@@ -279,6 +279,73 @@ def add_comment(id: str, comment: CommentCreate, db: Session = Depends(get_db)):
         "created_at": c.created_at.isoformat()
     }
 
+class UniversalDecideRequest(BaseModel):
+    decision: str  # APPROVED, REJECTED, CHANGES_REQUESTED
+    decidedByUserId: Optional[str] = "user_sarah_lin"
+    decidedByName: Optional[str] = "Sarah Lin"
+    decidedByRole: Optional[str] = "Finance Director"
+    reason: Optional[str] = None
+    feedback: Optional[str] = None
+    notes: Optional[str] = None
+
+@router.post("/{id}/decide")
+def universal_decide(id: str, payload: UniversalDecideRequest, db: Session = Depends(get_db)):
+    dec = payload.decision.upper()
+    user_id = payload.decidedByUserId or "user_sarah_lin"
+    user_name = payload.decidedByName or "Sarah Lin"
+    user_role = payload.decidedByRole or "Finance Director"
+    note_or_reason = payload.reason or payload.feedback or payload.notes or "Decision recorded via Governance Center."
+
+    try:
+        if dec == "APPROVED":
+            res = approval_engine.approve(
+                db=db,
+                approval_id=id,
+                user_id=user_id,
+                user_name=user_name,
+                user_role=user_role,
+                notes=note_or_reason
+            )
+            wf = workflow_engine.resume_workflow(db, res["workflow_id"])
+            return {
+                "status": "APPROVED",
+                "message": "Operation successfully authorized and resumed by workflow engine.",
+                "workflow_id": wf.id,
+                "workflow_status": wf.status
+            }
+        elif dec == "REJECTED":
+            res = approval_engine.reject(
+                db=db,
+                approval_id=id,
+                user_id=user_id,
+                user_name=user_name,
+                user_role=user_role,
+                reason=note_or_reason
+            )
+            return {
+                "status": "REJECTED",
+                "message": "Operation has been rejected. Sensitive execution prevented.",
+                "workflow_id": res["workflow_id"]
+            }
+        elif dec in ("CHANGES_REQUESTED", "REQUEST_CHANGES"):
+            res = approval_engine.request_changes(
+                db=db,
+                approval_id=id,
+                user_id=user_id,
+                user_name=user_name,
+                user_role=user_role,
+                feedback=note_or_reason
+            )
+            return {
+                "status": "CHANGES_REQUESTED",
+                "message": "Feedback submitted. Task returned to responsible agent for re-planning.",
+                "feedback": res["feedback"]
+            }
+        else:
+            raise HTTPException(status_code=400, detail=f"Invalid decision '{payload.decision}'.")
+    except ApprovalEngineError as e:
+        raise HTTPException(status_code=400, detail={"code": e.code, "message": e.message})
+
 @router.post("/bulk-approve")
 def bulk_approve(payload: BulkApproveRequest, db: Session = Depends(get_db)):
     """Bulk approves requests, independently validating permissions & policies for each"""

@@ -1,0 +1,6 @@
+{
+  "name": "EnterpriseFlow AI",
+  "description": "Autonomous AI Agents for Enterprise Operations – Orchestrating Employee Onboarding, Invoice Processing, Customer Resolution, Procurement, and IT Governance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

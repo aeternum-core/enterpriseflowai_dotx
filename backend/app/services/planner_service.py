@@ -14,18 +14,18 @@ class CentralPlannerService:
         p_lower = prompt.lower()
 
         # Domain classification
-        if any(w in p_lower for w in ["onboard", "hire", "employee", "candidate", "new hire", "join"]):
-            domain = "onboarding"
-            title = "Employee Onboarding Workflow"
+        if any(w in p_lower for w in ["vendor", "procurement", "purchase order", "quote", "rfp", "bid", "supplier"]):
+            domain = "procurement"
+            title = "Procurement & Vendor Onboarding"
         elif any(w in p_lower for w in ["invoice", "bill", "payment", "disbursement", "vendor payment", "po-"]):
             domain = "invoice"
             title = "Intelligent Invoice Processing"
+        elif any(w in p_lower for w in ["onboard", "hire", "employee", "candidate", "new hire", "join", "staff"]):
+            domain = "onboarding"
+            title = "Employee Onboarding Workflow"
         elif any(w in p_lower for w in ["customer", "refund", "ticket", "dispute", "client complaint", "support"]):
             domain = "customer"
             title = "Customer Request Resolution"
-        elif any(w in p_lower for w in ["procurement", "purchase order", "quote", "vendor onboarding", "rfp", "bid"]):
-            domain = "procurement"
-            title = "Procurement & Vendor Onboarding"
         elif any(w in p_lower for w in ["incident", "outage", "access", "root", "kubernetes", "k8s", "iam", "privilege", "security alert"]):
             domain = "it_incident"
             title = "IT Incident Response & Access Governance"

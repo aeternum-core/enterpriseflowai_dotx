@@ -47,6 +47,29 @@ def list_audit_events(
         ]
     }
 
+@router.get("/logs")
+def list_audit_logs_flat(db: Session = Depends(get_db)):
+    events = db.query(AuditEvent).order_by(AuditEvent.sequence_number.desc()).limit(100).all()
+    return [
+        {
+            "id": e.id,
+            "sequenceNumber": e.sequence_number,
+            "workflowId": e.workflow_id,
+            "actorId": e.actor_id,
+            "actorType": e.actor_type,
+            "actorName": e.actor_name,
+            "actorRole": "System / Agent",
+            "eventType": e.event_type,
+            "description": e.action_description,
+            "status": "SUCCESS" if e.execution_result == "SUCCESS" else "FAILURE",
+            "currentHash": e.current_hash,
+            "previousHash": e.previous_hash,
+            "timestamp": e.timestamp.isoformat() if e.timestamp else None,
+            "createdAt": e.timestamp.isoformat() if e.timestamp else None
+        }
+        for e in events
+    ]
+
 @router.get("/verify")
 def verify_hash_chain(db: Session = Depends(get_db)):
     """Cryptographically verifies every link in the append-only SHA-256 audit chain"""

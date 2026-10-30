@@ -76,3 +76,4 @@ async def websocket_telemetry_endpoint(websocket: WebSocket):
         pass
     except Exception:
         pass
+
