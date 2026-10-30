@@ -289,7 +289,7 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ onNavigate }
                       wf.status === 'WAITING_FOR_APPROVAL' ? 'bg-amber-100 text-amber-800 border-amber-200 font-bold' :
                       'bg-teal-100 text-teal-800 border-teal-200 animate-pulse'
                     }`}>
-                      {wf.status.replace(/_/g, ' ')}
+                      {(wf.status || 'PENDING').replace(/_/g, ' ')}
                     </span>
                     <span className="text-[11px] text-teal-700 font-bold">
                       PO: {wf.metadata?.poNumber || 'PO-98421'}

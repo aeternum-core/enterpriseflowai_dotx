@@ -291,15 +291,15 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ onNavigate
                       wf.status === 'WAITING_FOR_APPROVAL' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
                       'bg-indigo-50 text-indigo-700 border border-indigo-200'
                     }`}>
-                      {wf.status.replace(/_/g, ' ')}
+                      {(wf.status || 'PENDING').replace(/_/g, ' ')}
                     </span>
                   </div>
                   <div className="text-[11px] text-slate-500 mt-1 flex items-center gap-3">
                     <span>ID: {wf.id}</span>
                     <span>•</span>
-                    <span>Progress: {wf.progress}%</span>
+                    <span>Progress: {wf.progress ?? 0}%</span>
                     <span>•</span>
-                    <span>Created: {new Date(wf.createdAt).toLocaleDateString()}</span>
+                    <span>Created: {wf.createdAt ? new Date(wf.createdAt).toLocaleDateString() : 'Recent'}</span>
                   </div>
                 </div>
 

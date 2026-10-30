@@ -28,11 +28,12 @@ export const AgentsPage: React.FC = () => {
   }, []);
 
   const filteredAgents = agents.filter(a => {
-    const matchesSearch = a.name.toLowerCase().includes(search.toLowerCase()) ||
-      a.roleDescription.toLowerCase().includes(search.toLowerCase()) ||
-      a.capabilities.some(c => c.toLowerCase().includes(search.toLowerCase()));
+    const s = search.toLowerCase();
+    const matchesSearch = (a.name || '').toLowerCase().includes(s) ||
+      (a.roleDescription || '').toLowerCase().includes(s) ||
+      (a.capabilities || []).some(c => (c || '').toLowerCase().includes(s));
     const matchesDomain = selectedDomain === 'ALL' || a.workflowType === selectedDomain;
-    return matchesSearch && matchesDomain;
+    return Boolean(matchesSearch && matchesDomain);
   });
 
   const getDomainInfo = (type: string) => {

@@ -209,3 +209,4 @@ async def upload_document(file: UploadFile = File(...)):
     }
     uploaded_documents.append(new_doc)
     return new_doc
+

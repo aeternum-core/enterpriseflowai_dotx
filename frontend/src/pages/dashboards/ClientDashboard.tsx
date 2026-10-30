@@ -193,7 +193,7 @@ export const ClientDashboard: React.FC<ClientDashboardProps> = ({ onNavigate }) 
                       wf.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' :
                       'bg-pink-100 text-pink-800 border-pink-200 animate-pulse'
                     }`}>
-                      {wf.status.replace(/_/g, ' ')}
+                      {(wf.status || 'PENDING').replace(/_/g, ' ')}
                     </span>
                     <span className="text-[11px] text-pink-700 font-bold">
                       {wf.metadata?.customerName || 'Customer'}

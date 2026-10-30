@@ -237,7 +237,7 @@ export const WorkflowsPage: React.FC<WorkflowsPageProps> = ({
                           wf.status === 'FAILED' ? 'bg-rose-100 text-rose-800 border-rose-200' :
                           'bg-blue-100 text-blue-800 border-blue-200 animate-pulse'
                         }`}>
-                          {wf.status.replace(/_/g, ' ')}
+                          {(wf.status || 'PENDING').replace(/_/g, ' ')}
                         </span>
                         <span className="text-[11px] text-slate-400">
                           Priority: <strong>{wf.priority}</strong>

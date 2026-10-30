@@ -168,7 +168,7 @@ export const WorkflowDetailPage: React.FC<WorkflowDetailPageProps> = ({
                 workflow.status === 'FAILED' ? 'bg-rose-100 text-rose-800 border-rose-200' :
                 'bg-blue-100 text-blue-800 border-blue-200 animate-pulse'
               }`}>
-                {workflow.status.replace(/_/g, ' ')}
+                {(workflow.status || 'PENDING').replace(/_/g, ' ')}
               </span>
               <span className="text-[11px] text-slate-400 font-medium">
                 Priority: {workflow.priority}
@@ -237,11 +237,11 @@ export const WorkflowDetailPage: React.FC<WorkflowDetailPageProps> = ({
 
         {/* Metadata Badges */}
         <div className="flex items-center gap-4 text-xs text-slate-500 mt-4 pt-3 border-t border-slate-100 flex-wrap">
-          <div>Submitted by: <strong className="text-slate-800">{workflow.submittedByName}</strong></div>
+          <div>Submitted by: <strong className="text-slate-800">{workflow.submittedByName || 'Platform User'}</strong></div>
           <div>•</div>
-          <div>Department: <strong className="text-slate-800">{workflow.submittedByRole.replace('_', ' ')}</strong></div>
+          <div>Department: <strong className="text-slate-800">{workflow.submittedByRole?.replace('_', ' ') || 'Operations'}</strong></div>
           <div>•</div>
-          <div>Created: <strong className="text-slate-800">{new Date(workflow.createdAt).toLocaleTimeString()}</strong></div>
+          <div>Created: <strong className="text-slate-800">{workflow.createdAt ? new Date(workflow.createdAt).toLocaleTimeString() : 'Recent'}</strong></div>
           {workflow.completedAt && (
             <>
               <div>•</div>
@@ -259,10 +259,10 @@ export const WorkflowDetailPage: React.FC<WorkflowDetailPageProps> = ({
               <ShieldAlert className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
               <div>
                 <h3 className="text-sm font-bold text-amber-950">
-                  Human-in-the-Loop Checkpoint Gate: {pendingApproval.actionRequested}
+                  Human-in-the-Loop Checkpoint Gate: {pendingApproval.actionRequested || (pendingApproval as any).title || 'Approval Required'}
                 </h3>
                 <p className="text-xs text-amber-800 mt-1">
-                  Central Planner has paused autonomous execution until authorization is submitted by a <strong>{pendingApproval.approverRoleRequired.replace('_', ' ')}</strong>.
+                  Central Planner has paused autonomous execution until authorization is submitted by a <strong>{pendingApproval.approverRoleRequired?.replace('_', ' ') || (pendingApproval as any).required_role || 'Authorized Approver'}</strong>.
                 </p>
                 <div className="mt-2 text-[11px] text-amber-900 font-medium">
                   {pendingApproval.details?.reason || 'Compliance and safety policy enforcement gate.'}
@@ -515,7 +515,7 @@ export const WorkflowDetailPage: React.FC<WorkflowDetailPageProps> = ({
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Approver Role:</span>
-                <span className="font-bold text-blue-700">{pendingApproval.approverRoleRequired.replace('_', ' ')}</span>
+                <span className="font-bold text-blue-700">{pendingApproval.approverRoleRequired?.replace('_', ' ') || (pendingApproval as any).required_role || 'Authorized Approver'}</span>
               </div>
             </div>
 

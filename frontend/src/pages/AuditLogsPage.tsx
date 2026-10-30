@@ -50,19 +50,21 @@ export const AuditLogsPage: React.FC<{ onNavigateWorkflow: (id: string) => void 
   }, []);
 
   const filteredAudit = auditLogs.filter(log => {
-    const matchesSearch = log.description.toLowerCase().includes(search.toLowerCase()) ||
-      log.actorName.toLowerCase().includes(search.toLowerCase()) ||
-      (log.workflowId && log.workflowId.toLowerCase().includes(search.toLowerCase()));
+    const s = search.toLowerCase();
+    const matchesSearch = (log.description || '').toLowerCase().includes(s) ||
+      (log.actorName || '').toLowerCase().includes(s) ||
+      (log.workflowId && log.workflowId.toLowerCase().includes(s));
     const matchesActor = selectedActorType === 'ALL' || log.actorType === selectedActorType;
     const matchesStatus = selectedStatus === 'ALL' || log.status === selectedStatus;
     const matchesEvent = selectedEventType === 'ALL' || log.eventType === selectedEventType;
-    return matchesSearch && matchesActor && matchesStatus && matchesEvent;
+    return Boolean(matchesSearch && matchesActor && matchesStatus && matchesEvent);
   });
 
   const filteredInteraction = interactionLogs.filter(log => {
-    return log.action.toLowerCase().includes(search.toLowerCase()) ||
-      (log.userName && log.userName.toLowerCase().includes(search.toLowerCase())) ||
-      (log.workflowId && log.workflowId.toLowerCase().includes(search.toLowerCase()));
+    const s = search.toLowerCase();
+    return (log.action || '').toLowerCase().includes(s) ||
+      (log.userName && log.userName.toLowerCase().includes(s)) ||
+      (log.workflowId && log.workflowId.toLowerCase().includes(s));
   });
 
   const handleExportJSON = () => {

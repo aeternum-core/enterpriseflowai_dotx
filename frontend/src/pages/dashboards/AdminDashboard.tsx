@@ -225,10 +225,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-mono font-bold text-slate-400">{wf.id}</span>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getWorkflowBadge(wf.status)}`}>
-                      {wf.status.replace(/_/g, ' ')}
+                      {(wf.status || 'PENDING').replace(/_/g, ' ')}
                     </span>
                     <span className="text-[10px] text-slate-400 font-medium">
-                      By {wf.submittedByName} ({wf.submittedByRole.replace('_', ' ')})
+                      By {wf.submittedByName || 'Platform User'} ({wf.submittedByRole?.replace('_', ' ') || 'STAFF'})
                     </span>
                   </div>
                   <h3 className="text-sm font-bold text-slate-800 leading-tight">
@@ -237,18 +237,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                   <div className="text-xs text-slate-500 flex items-center gap-3">
                     <span>Current Stage: <strong className="text-slate-700">{wf.currentAgentName || 'Central Planner'}</strong></span>
                     <span>•</span>
-                    <span>Tasks: {wf.tasks.filter(t => t.status === 'COMPLETED').length}/{wf.tasks.length}</span>
+                    <span>Tasks: {wf.tasks ? wf.tasks.filter(t => t.status === 'COMPLETED').length : 0}/{wf.tasks ? wf.tasks.length : 0}</span>
                   </div>
                 </div>
 
                 {/* Progress Bar & Open Arrow */}
                 <div className="flex items-center gap-4 sm:shrink-0">
                   <div className="w-28 text-right">
-                    <div className="text-xs font-bold text-slate-700 mb-1">{wf.progress}%</div>
+                    <div className="text-xs font-bold text-slate-700 mb-1">
+                      {wf.progress ?? (wf.tasks && wf.tasks.length > 0 ? Math.round((wf.tasks.filter(t => t.status === 'COMPLETED').length / wf.tasks.length) * 100) : 0)}%
+                    </div>
                     <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                       <div
                         className="bg-blue-600 h-full rounded-full transition-all duration-500"
-                        style={{ width: `${wf.progress}%` }}
+                        style={{ width: `${wf.progress ?? (wf.tasks && wf.tasks.length > 0 ? Math.round((wf.tasks.filter(t => t.status === 'COMPLETED').length / wf.tasks.length) * 100) : 0)}%` }}
                       />
                     </div>
                   </div>

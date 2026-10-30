@@ -212,7 +212,7 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({ onNavigate }) => {
                       wf.status === 'WAITING_FOR_APPROVAL' ? 'bg-amber-100 text-amber-800 border-amber-200 font-bold' :
                       'bg-indigo-100 text-indigo-800 border-indigo-200 animate-pulse'
                     }`}>
-                      {wf.status.replace(/_/g, ' ')}
+                      {(wf.status || 'PENDING').replace(/_/g, ' ')}
                     </span>
                     <span className="text-[11px] text-slate-400 font-medium">
                       Start Date: {wf.metadata?.startDate || 'Upcoming'}
