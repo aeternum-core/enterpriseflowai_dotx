@@ -68,6 +68,8 @@ def get_approval_metrics(db: Session = Depends(get_db)):
 @router.get("")
 def list_approvals(
     status: Optional[str] = None,
+    state: Optional[str] = None,
+    role: Optional[str] = None,
     domain: Optional[str] = None,
     risk_level: Optional[str] = None,
     department: Optional[str] = None,
@@ -79,8 +81,18 @@ def list_approvals(
 ):
     query = db.query(ApprovalRequest)
 
-    if status and status != "ALL":
-        query = query.filter(ApprovalRequest.status == status)
+    effective_status = status or state
+    if effective_status and effective_status != "ALL":
+        query = query.filter(ApprovalRequest.status == effective_status)
+    if role and role != "ADMIN":
+        if "FIN" in role:
+            query = query.filter(ApprovalRequest.required_role.ilike("%Finance%"))
+        elif "HR" in role:
+            query = query.filter(ApprovalRequest.required_role.ilike("%HR%"))
+        elif "PROC" in role:
+            query = query.filter(ApprovalRequest.required_role.ilike("%Procurement%"))
+        elif "IT" in role or "SEC" in role:
+            query = query.filter(ApprovalRequest.required_role.ilike("%IT%"))
     if domain and domain != "ALL":
         query = query.filter(ApprovalRequest.domain == domain)
     if risk_level and risk_level != "ALL":
@@ -104,7 +116,7 @@ def list_approvals(
     total = query.count()
     items = query.order_by(ApprovalRequest.created_at.desc()).offset(skip).limit(limit).all()
 
-    # Enrich with is_overdue flag
+    # Enrich with is_overdue flag and camelCase aliases
     now = datetime.utcnow()
     res = []
     for item in items:
@@ -112,26 +124,38 @@ def list_approvals(
         res.append({
             "id": item.id,
             "workflow_id": item.workflow_id,
+            "workflowId": item.workflow_id,
             "task_id": item.task_id,
+            "taskId": item.task_id,
             "title": item.title,
+            "actionRequested": item.title,
             "domain": item.domain,
             "risk_level": item.risk_level,
+            "riskLevel": item.risk_level,
             "status": item.status,
+            "state": item.status,
             "priority": item.priority,
             "requested_by_agent": item.requested_by_agent,
+            "requestedByAgent": item.requested_by_agent,
             "requesting_employee": item.requesting_employee,
             "department": item.department,
             "financial_amount": item.financial_amount,
+            "financialAmount": item.financial_amount,
             "currency": item.currency,
             "business_justification": item.business_justification,
+            "businessJustification": item.business_justification,
             "proposed_action": item.proposed_action,
+            "proposedAction": item.proposed_action,
             "required_role": item.required_role,
+            "approverRoleRequired": item.required_role,
             "due_date": item.due_date.isoformat() if item.due_date else None,
+            "dueDate": item.due_date.isoformat() if item.due_date else None,
             "is_overdue": is_overdue,
             "decided_by_name": item.decided_by_name,
             "decided_at": item.decided_at.isoformat() if item.decided_at else None,
             "decision_reason": item.decision_reason,
-            "created_at": item.created_at.isoformat() if item.created_at else None
+            "created_at": item.created_at.isoformat() if item.created_at else None,
+            "createdAt": item.created_at.isoformat() if item.created_at else None
         })
 
     return {"total": total, "items": res}

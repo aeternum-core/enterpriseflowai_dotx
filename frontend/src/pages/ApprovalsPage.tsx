@@ -34,7 +34,10 @@ export const ApprovalsPage: React.FC<ApprovalsPageProps> = ({ onNavigateWorkflow
   const fetchApprovals = async () => {
     try {
       const res = await fetch('/api/approvals');
-      if (res.ok) setApprovals(await res.json());
+      if (res.ok) {
+        const d = await res.json();
+        setApprovals(Array.isArray(d) ? d : d.items || []);
+      }
     } catch (e) {
       console.error(e);
     }

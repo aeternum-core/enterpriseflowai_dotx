@@ -45,18 +45,20 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ onNavigate
         fetch('/api/approvals')
       ]);
       if (wfRes.ok) {
-        const allWfs: Workflow[] = await wfRes.json();
+        const raw = await wfRes.json();
+        const allWfs: Workflow[] = Array.isArray(raw) ? raw : raw.items || [];
         // Include employee onboarding and relevant employee request workflows
         setWorkflows(allWfs.filter(w => 
           w.type === 'EMPLOYEE_ONBOARDING' || 
           w.type === 'IT_INCIDENT_ACCESS_GOVERNANCE' ||
           w.title.toLowerCase().includes('employee') ||
-          w.title.toLowerCase().includes('request')
+          w.title.toLowerCase().includes('request') ||
+          (w as any).domain === 'onboarding'
         ));
       }
       if (apprRes.ok) {
-        const allApprs: ApprovalRequest[] = await apprRes.json();
-        setApprovals(allApprs);
+        const rawAppr = await apprRes.json();
+        setApprovals(Array.isArray(rawAppr) ? rawAppr : rawAppr.items || []);
       }
     } catch (e) {
       console.error(e);

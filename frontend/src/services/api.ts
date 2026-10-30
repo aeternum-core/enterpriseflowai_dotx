@@ -151,7 +151,11 @@ export const api = {
       if (v !== undefined && v !== null && v !== '') query.append(k, String(v));
     });
     const res = await fetch(`${API_BASE}/approvals?${query.toString()}`);
-    return res.json();
+    const data = await res.json();
+    return {
+      total: data.total ?? (Array.isArray(data) ? data.length : data.items?.length ?? 0),
+      items: Array.isArray(data) ? data : data.items || []
+    };
   },
 
   async getApprovalDetail(id: string): Promise<ApprovalDetail> {
@@ -233,7 +237,11 @@ export const api = {
     if (domain && domain !== 'ALL') query.append('domain', domain);
     if (status && status !== 'ALL') query.append('status', status);
     const res = await fetch(`${API_BASE}/workflows?${query.toString()}`);
-    return res.json();
+    const data = await res.json();
+    return {
+      total: data.total ?? (Array.isArray(data) ? data.length : data.items?.length ?? 0),
+      items: Array.isArray(data) ? data : data.items || []
+    };
   },
 
   async getWorkflowDetail(id: string): Promise<WorkflowDetail> {
@@ -253,7 +261,11 @@ export const api = {
   async listAuditEvents(workflowId?: string): Promise<{ total: number; events: AuditEvent[] }> {
     const url = workflowId ? `${API_BASE}/audit/events?workflow_id=${workflowId}` : `${API_BASE}/audit/events`;
     const res = await fetch(url);
-    return res.json();
+    const data = await res.json();
+    return {
+      total: data.total ?? (Array.isArray(data) ? data.length : (data.events || data.items)?.length ?? 0),
+      events: Array.isArray(data) ? data : (data.events || data.items || [])
+    };
   },
 
   async verifyAuditChain(): Promise<AuditVerification> {

@@ -33,12 +33,16 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({ onNavigateWorkflow }) 
         fetch('/api/agents'),
         fetch('/api/workflows')
       ]);
-      if (agentRes.ok) setAgents(await agentRes.json());
+      if (agentRes.ok) {
+        const d = await agentRes.json();
+        setAgents(Array.isArray(d) ? d : d.items || []);
+      }
       if (wfRes.ok) {
-        const wfs: Workflow[] = await wfRes.json();
+        const rawWf = await wfRes.json();
+        const wfs: Workflow[] = Array.isArray(rawWf) ? rawWf : rawWf.items || [];
         setWorkflows(wfs);
         if (!activeWorkflow && wfs.length > 0) {
-          const running = wfs.find(w => w.status === 'RUNNING' || w.status === 'WAITING_FOR_APPROVAL');
+          const running = wfs.find(w => w.status === 'RUNNING' || w.status === 'WAITING_FOR_APPROVAL' || w.status === 'WAITING_APPROVAL');
           setActiveWorkflow(running || wfs[0]);
         }
       }

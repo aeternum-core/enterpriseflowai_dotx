@@ -53,7 +53,10 @@ export const WorkflowsPage: React.FC<WorkflowsPageProps> = ({
   const fetchWorkflows = async () => {
     try {
       const res = await fetch('/api/workflows');
-      if (res.ok) setWorkflows(await res.json());
+      if (res.ok) {
+        const d = await res.json();
+        setWorkflows(Array.isArray(d) ? d : d.items || []);
+      }
     } catch (e) {
       console.error(e);
     }

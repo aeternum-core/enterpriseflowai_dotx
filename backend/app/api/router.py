@@ -12,6 +12,7 @@ from app.api.users import router as users_router
 from app.api.chaos import router as chaos_router
 from app.api.observability import router as observability_router
 from app.api.auth import router as auth_router
+from app.api.demo import router as demo_router
 
 api_router = APIRouter()
 api_router.include_router(approvals_router)
@@ -24,6 +25,7 @@ api_router.include_router(users_router)
 api_router.include_router(chaos_router)
 api_router.include_router(observability_router)
 api_router.include_router(auth_router)
+api_router.include_router(demo_router)
 
 @api_router.get("/audit-logs")
 def get_audit_logs(db: Session = Depends(get_db)):

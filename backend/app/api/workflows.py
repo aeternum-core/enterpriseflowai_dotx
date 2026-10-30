@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.workflow import Workflow, WorkflowTask, WorkflowContext
+from app.models.approval import ApprovalRequest
 from app.services.workflow_engine import workflow_engine
 from app.api.auth import broadcast_event
 
@@ -47,7 +48,7 @@ def _start_workflow_internal(payload: StartWorkflowRequest, db: Session):
         requester_id=req_id
     )
 
-    return {
+    wf_dict = {
         "id": wf.id,
         "workflow_id": wf.id,
         "title": wf.title,
@@ -58,7 +59,12 @@ def _start_workflow_internal(payload: StartWorkflowRequest, db: Session):
         "priority": wf.priority,
         "risk_level": wf.risk_level,
         "task_count": len(wf.tasks),
-        "waiting_approval": wf.status == "WAITING_APPROVAL"
+        "waiting_approval": wf.status == "WAITING_APPROVAL",
+        "createdAt": wf.created_at.isoformat() if wf.created_at else None
+    }
+    return {
+        **wf_dict,
+        "workflow": wf_dict
     }
 
 @router.post("/start")
@@ -69,19 +75,44 @@ def start_workflow(payload: StartWorkflowRequest, db: Session = Depends(get_db))
 def create_workflow(payload: StartWorkflowRequest, db: Session = Depends(get_db)):
     return _start_workflow_internal(payload, db)
 
+TYPE_TO_DOMAIN = {
+    "EMPLOYEE_ONBOARDING": "onboarding",
+    "INVOICE_PROCESSING": "invoice",
+    "CUSTOMER_REQUEST_RESOLUTION": "customer",
+    "PROCUREMENT_VENDOR_ONBOARDING": "procurement",
+    "IT_INCIDENT_ACCESS_GOVERNANCE": "it_incident"
+}
+
 @router.get("")
 def list_workflows(
     domain: Optional[str] = None,
+    type: Optional[str] = None,
     status: Optional[str] = None,
+    search: Optional[str] = None,
+    role: Optional[str] = None,
     skip: int = 0,
     limit: int = 50,
     db: Session = Depends(get_db)
 ):
     q = db.query(Workflow)
-    if domain and domain != "ALL":
-        q = q.filter(Workflow.domain == domain)
+    target_domain = domain
+    if type and type in TYPE_TO_DOMAIN:
+        target_domain = TYPE_TO_DOMAIN[type]
+    elif role:
+        if role == "HR_MANAGER":
+            target_domain = "onboarding"
+        elif role == "FINANCE_MANAGER":
+            target_domain = "invoice"
+        elif role in ("CLIENT_MANAGER", "SERVICE_MANAGER"):
+            target_domain = "customer"
+
+    if target_domain and target_domain != "ALL":
+        q = q.filter(Workflow.domain == target_domain)
     if status and status != "ALL":
         q = q.filter(Workflow.status == status)
+    if search:
+        s_pat = f"%{search}%"
+        q = q.filter(Workflow.title.ilike(s_pat) | Workflow.raw_input.ilike(s_pat))
 
     total = q.count()
     items = q.order_by(Workflow.created_at.desc()).offset(skip).limit(limit).all()
@@ -162,10 +193,46 @@ def get_workflow_detail(id: str, db: Session = Depends(get_db)):
         for c in wf.contexts
     ]
 
-    return {
+    wf_approvals = [
+        {
+            "id": a.id,
+            "workflowId": a.workflow_id,
+            "taskId": a.task_id,
+            "title": a.title,
+            "actionRequested": a.title,
+            "domain": a.domain,
+            "riskLevel": a.risk_level,
+            "risk_level": a.risk_level,
+            "state": a.status,
+            "status": a.status,
+            "financialAmount": a.financial_amount,
+            "approverRoleRequired": a.required_role,
+            "required_role": a.required_role,
+            "businessJustification": a.business_justification,
+            "proposedAction": a.proposed_action,
+            "createdAt": a.created_at.isoformat() if a.created_at else None
+        }
+        for a in db.query(ApprovalRequest).filter(ApprovalRequest.workflow_id == id).all()
+    ]
+
+    wf_messages = [
+        {
+            "id": f"msg_{t.id}",
+            "workflowId": wf.id,
+            "fromAgentName": t.agent_name,
+            "toAgentName": "Central Planner Agent",
+            "content": f"Task '{t.title}' transition recorded: {t.status}.",
+            "timestamp": t.completed_at.isoformat() if t.completed_at else t.started_at.isoformat() if t.started_at else None
+        }
+        for t in wf.tasks
+    ]
+
+    workflow_obj = {
         "id": wf.id,
         "title": wf.title,
+        "name": wf.title,
         "domain": wf.domain,
+        "type": DOMAIN_TO_TYPE.get(wf.domain, "GLOBAL"),
         "status": wf.status,
         "priority": wf.priority,
         "risk_level": wf.risk_level,
@@ -174,8 +241,19 @@ def get_workflow_detail(id: str, db: Session = Depends(get_db)):
         "planner_plan": wf.planner_plan,
         "started_at": wf.started_at.isoformat() if wf.started_at else None,
         "completed_at": wf.completed_at.isoformat() if wf.completed_at else None,
+        "createdAt": wf.created_at.isoformat() if wf.created_at else None,
         "tasks": tasks,
         "contexts": contexts
+    }
+
+    return {
+        **workflow_obj,
+        "workflow": workflow_obj,
+        "tasks": tasks,
+        "contexts": contexts,
+        "approvals": wf_approvals,
+        "messages": wf_messages,
+        "documents": []
     }
 
 @router.post("/{id}/resume")

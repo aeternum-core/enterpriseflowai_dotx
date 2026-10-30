@@ -42,3 +42,4 @@ Write-Host "==================================================" -ForegroundColor
 Write-Host " EnterpriseFlow AI Setup Complete!               " -ForegroundColor Green
 Write-Host " Run .\start.ps1 to launch backend and frontend. " -ForegroundColor Green
 Write-Host "==================================================" -ForegroundColor Green
+

@@ -45,8 +45,14 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ onNavigate }
         fetch('/api/workflows?type=INVOICE_PROCESSING'),
         fetch('/api/approvals?role=FINANCE_MANAGER')
       ]);
-      if (wfRes.ok) setWorkflows(await wfRes.json());
-      if (apprRes.ok) setApprovals(await apprRes.json());
+      if (wfRes.ok) {
+        const d = await wfRes.json();
+        setWorkflows(Array.isArray(d) ? d : d.items || []);
+      }
+      if (apprRes.ok) {
+        const d = await apprRes.json();
+        setApprovals(Array.isArray(d) ? d : d.items || []);
+      }
     } catch (e) {
       console.error(e);
     }

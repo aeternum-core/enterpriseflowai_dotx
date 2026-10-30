@@ -36,7 +36,10 @@ export const ClientDashboard: React.FC<ClientDashboardProps> = ({ onNavigate }) 
   const fetchClientData = async () => {
     try {
       const res = await fetch('/api/workflows?type=CUSTOMER_REQUEST_RESOLUTION');
-      if (res.ok) setWorkflows(await res.json());
+      if (res.ok) {
+        const d = await res.json();
+        setWorkflows(Array.isArray(d) ? d : d.items || []);
+      }
     } catch (e) {
       console.error(e);
     }

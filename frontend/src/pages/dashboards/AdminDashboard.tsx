@@ -44,9 +44,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         fetch('/api/planner/stats')
       ]);
 
-      if (wfRes.ok) setWorkflows(await wfRes.json());
-      if (apprRes.ok) setApprovals(await apprRes.json());
-      if (auditRes.ok) setAuditLogs(await auditRes.json());
+      if (wfRes.ok) {
+        const d = await wfRes.json();
+        setWorkflows(Array.isArray(d) ? d : d.items || []);
+      }
+      if (apprRes.ok) {
+        const d = await apprRes.json();
+        setApprovals(Array.isArray(d) ? d : d.items || []);
+      }
+      if (auditRes.ok) {
+        const d = await auditRes.json();
+        setAuditLogs(Array.isArray(d) ? d : d.events || d.items || []);
+      }
       if (statsRes.ok) setStats(await statsRes.json());
     } catch (e) {
       console.error(e);

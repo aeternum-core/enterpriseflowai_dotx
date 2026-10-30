@@ -42,10 +42,17 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({ onNavigate }) => {
         fetch('/api/workflows?type=EMPLOYEE_ONBOARDING'),
         fetch('/api/approvals')
       ]);
-      if (wfRes.ok) setWorkflows(await wfRes.json());
+      if (wfRes.ok) {
+        const d = await wfRes.json();
+        setWorkflows(Array.isArray(d) ? d : d.items || []);
+      }
       if (apprRes.ok) {
-        const allApprs: ApprovalRequest[] = await apprRes.json();
-        setApprovals(allApprs.filter(a => a.actionRequested.toLowerCase().includes('access') || a.actionRequested.toLowerCase().includes('hire')));
+        const raw = await apprRes.json();
+        const allApprs: any[] = Array.isArray(raw) ? raw : raw.items || [];
+        setApprovals(allApprs.filter(a => {
+          const act = (a.actionRequested || a.title || '').toLowerCase();
+          return act.includes('access') || act.includes('hire') || act.includes('onboard') || a.domain === 'onboarding';
+        }));
       }
     } catch (e) {
       console.error(e);

@@ -30,8 +30,14 @@ export const AuditLogsPage: React.FC<{ onNavigateWorkflow: (id: string) => void 
         fetch('/api/audit-logs'),
         fetch('/api/interaction-logs')
       ]);
-      if (auditRes.ok) setAuditLogs(await auditRes.json());
-      if (intRes.ok) setInteractionLogs(await intRes.json());
+      if (auditRes.ok) {
+        const d = await auditRes.json();
+        setAuditLogs(Array.isArray(d) ? d : d.events || d.items || []);
+      }
+      if (intRes.ok) {
+        const d = await intRes.json();
+        setInteractionLogs(Array.isArray(d) ? d : d.items || []);
+      }
     } catch (e) {
       console.error(e);
     }
