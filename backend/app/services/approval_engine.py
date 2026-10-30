@@ -94,6 +94,30 @@ class ApprovalEngine:
 
         return req
 
+    @staticmethod
+    def _is_role_authorized(user_role: str, required_role: Optional[str]) -> bool:
+        if not required_role:
+            return True
+        u = (user_role or "").strip().lower()
+        r = (required_role or "").strip().lower()
+        # Admin or root supervisor has universal governance authority
+        if "admin" in u:
+            return True
+        if u == r:
+            return True
+        # Normalize underscores vs spaces
+        u_norm = u.replace("_", " ")
+        r_norm = r.replace("_", " ")
+        if u_norm == r_norm:
+            return True
+        # Department / domain role matching
+        if ("fin" in u and "fin" in r) or ("hr" in u and "hr" in r) or \
+           (("it" in u or "sec" in u) and ("it" in r or "sec" in r)) or \
+           ("proc" in u and "proc" in r) or \
+           (("cust" in u or "client" in u or "support" in u) and ("cust" in r or "client" in r or "support" in r)):
+            return True
+        return False
+
     @classmethod
     def approve(
         cls,
@@ -112,11 +136,11 @@ class ApprovalEngine:
             raise ApprovalEngineError(f"Cannot approve request in status '{req.status}'", "INVALID_STATUS")
 
         # Security check: Agent cannot approve itself
-        if user_id.startswith("agent_") or user_role.lower() == "agent":
+        if user_id.startswith("agent_") or (user_role and user_role.lower() == "agent"):
             raise ApprovalEngineError("Security violation: AI agents cannot approve operations.", "UNAUTHORIZED_AGENT_APPROVAL")
 
         # Role validation: Check if user has required role or is Admin
-        if req.required_role and user_role != req.required_role and "Admin" not in user_role:
+        if req.required_role and not cls._is_role_authorized(user_role, req.required_role):
             raise ApprovalEngineError(
                 f"Unauthorized: This request requires role '{req.required_role}', but current user has role '{user_role}'.",
                 "ROLE_MISMATCH"

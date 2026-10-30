@@ -253,7 +253,7 @@ export const WorkflowsPage: React.FC<WorkflowsPageProps> = ({
                         <span>•</span>
                         <span>Current Agent: <strong className="text-blue-600">{wf.currentAgentName || 'Central Planner'}</strong></span>
                         <span>•</span>
-                        <span>Tasks: {wf.tasks.filter(t => t.status === 'COMPLETED').length}/{wf.tasks.length}</span>
+                        <span>Tasks: {wf.tasks ? wf.tasks.filter(t => t.status === 'COMPLETED').length : 0}/{wf.tasks ? wf.tasks.length : 0}</span>
                       </div>
                     </div>
                   </div>

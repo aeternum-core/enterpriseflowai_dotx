@@ -167,7 +167,8 @@ def list_workflows(
                     "assignedAgentName": t.agent_name,
                     "execution_order": t.execution_order,
                     "order": t.execution_order,
-                    "dependsOn": t.input_payload.get("dependencies", []) if isinstance(t.input_payload, dict) else []
+                    "dependsOn": t.input_payload.get("dependencies", []) if isinstance(t.input_payload, dict) else [],
+                    "dependencies": t.input_payload.get("dependencies", []) if isinstance(t.input_payload, dict) else []
                 }
                 for t in w.tasks
             ],
@@ -198,13 +199,21 @@ def get_workflow_detail(id: str, db: Session = Depends(get_db)):
             "title": t.title,
             "description": t.description,
             "execution_order": t.execution_order,
+            "order": t.execution_order,
             "status": t.status,
+            "assignedAgentName": t.agent_name,
+            "dependsOn": t.input_payload.get("dependencies", []) if isinstance(t.input_payload, dict) else [],
+            "dependencies": t.input_payload.get("dependencies", []) if isinstance(t.input_payload, dict) else [],
             "input_payload": t.input_payload,
+            "input": t.input_payload,
             "output_payload": t.output_payload,
+            "output": t.output_payload,
             "error_details": t.error_details,
             "required_approval_id": t.required_approval_id,
             "started_at": t.started_at.isoformat() if t.started_at else None,
-            "completed_at": t.completed_at.isoformat() if t.completed_at else None
+            "startedAt": t.started_at.isoformat() if t.started_at else None,
+            "completed_at": t.completed_at.isoformat() if t.completed_at else None,
+            "completedAt": t.completed_at.isoformat() if t.completed_at else None
         }
         for t in wf.tasks
     ]

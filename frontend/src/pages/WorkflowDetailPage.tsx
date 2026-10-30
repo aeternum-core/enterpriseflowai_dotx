@@ -93,7 +93,7 @@ export const WorkflowDetailPage: React.FC<WorkflowDetailPageProps> = ({
   };
 
   const handleDecision = async (decision: 'APPROVED' | 'REJECTED') => {
-    if (!data || data.approvals.length === 0) return;
+    if (!data || !data.approvals || data.approvals.length === 0) return;
     const approval = data.approvals[0];
     setIsDeciding(true);
     try {
@@ -403,7 +403,7 @@ export const WorkflowDetailPage: React.FC<WorkflowDetailPageProps> = ({
 
                     <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-200">
                       <span>Task ID: {task.id}</span>
-                      <span>Dependencies: {task.dependencies.length > 0 ? task.dependencies.join(', ') : 'Root task'}</span>
+                      <span>Dependencies: {((task.dependencies || (task as any).dependsOn || []) as string[]).length > 0 ? ((task.dependencies || (task as any).dependsOn || []) as string[]).join(', ') : 'Root task'}</span>
                       {task.completedAt && <span>Completed at: {new Date(task.completedAt).toLocaleTimeString()}</span>}
                     </div>
 
