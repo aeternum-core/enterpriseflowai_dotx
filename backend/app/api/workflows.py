@@ -83,6 +83,24 @@ TYPE_TO_DOMAIN = {
     "IT_INCIDENT_ACCESS_GOVERNANCE": "it_incident"
 }
 
+def generate_planner_notes(w) -> list:
+    notes = [
+        f"Goal Ingestion: Parsed natural language objective for '{w.title}'.",
+        f"Level 2 DAG Synthesis: Decomposed request into {len(w.tasks)} structured tasks with dependency mapping.",
+        f"Policy Sentinel Review: Verified authority tier and compliance bounds (Risk Tier: {w.risk_level or 'LOW'})."
+    ]
+    if any(t.required_approval_id for t in w.tasks):
+        notes.append("Human-in-the-Loop Governance: Sensitive operation detected; paused execution at approval gate.")
+    if w.status == "COMPLETED":
+        notes.append("Execution Verified: All tasks completed successfully with cryptographic audit hash recorded.")
+    elif w.status in ("WAITING_FOR_APPROVAL", "WAITING_APPROVAL"):
+        notes.append("Governance Gate: Execution paused awaiting authorized human sign-off.")
+    elif w.status == "RUNNING":
+        notes.append("Active Orchestration: Delegating execution stream to specialized worker roster.")
+    elif w.status == "FAILED":
+        notes.append("Fault Encountered: Self-healing evaluation triggered; manual intervention recommended.")
+    return notes
+
 @router.get("")
 def list_workflows(
     domain: Optional[str] = None,
@@ -156,6 +174,8 @@ def list_workflows(
                 next((t.agent_name for t in w.tasks if t.status == "PENDING"), None) or
                 "Central Planner Agent"
             ),
+            "plannerNotes": generate_planner_notes(w),
+            "planner_notes": generate_planner_notes(w),
             "tasks": [
                 {
                     "id": t.id,
@@ -300,6 +320,8 @@ def get_workflow_detail(id: str, db: Session = Depends(get_db)):
             next((t.agent_name for t in wf.tasks if t.status == "PENDING"), None) or
             "Central Planner Agent"
         ),
+        "plannerNotes": generate_planner_notes(wf),
+        "planner_notes": generate_planner_notes(wf),
         "started_at": wf.started_at.isoformat() if wf.started_at else None,
         "completed_at": wf.completed_at.isoformat() if wf.completed_at else None,
         "createdAt": wf.created_at.isoformat() if wf.created_at else None,

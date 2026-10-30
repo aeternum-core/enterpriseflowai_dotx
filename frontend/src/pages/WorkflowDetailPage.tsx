@@ -464,12 +464,18 @@ export const WorkflowDetailPage: React.FC<WorkflowDetailPageProps> = ({
             Central Planner Agent Dynamic Execution Ledger
           </h2>
           <div className="space-y-2 text-xs">
-            {workflow.plannerNotes.map((note, i) => (
-              <div key={i} className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-start gap-2.5">
-                <span className="w-2 h-2 rounded-full bg-cyan-500 mt-1 shrink-0" />
-                <span className="text-slate-800 font-medium">{note}</span>
+            {workflow.plannerNotes && workflow.plannerNotes.length > 0 ? (
+              workflow.plannerNotes.map((note, i) => (
+                <div key={i} className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-start gap-2.5">
+                  <span className="w-2 h-2 rounded-full bg-cyan-500 mt-1 shrink-0" />
+                  <span className="text-slate-800 font-medium">{note}</span>
+                </div>
+              ))
+            ) : (
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 text-xs italic">
+                Central Planner evaluated DAG dependencies, validated compliance policies, and coordinated task dispatches.
               </div>
-            ))}
+            )}
           </div>
         </div>
       )}

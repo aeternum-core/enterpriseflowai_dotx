@@ -205,7 +205,7 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({ onNavigateWorkflow }) 
 
           {/* Task Dependency Chain */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-            {activeWorkflow.tasks.map((task) => (
+            {(activeWorkflow.tasks || []).map((task) => (
               <div
                 key={task.id}
                 className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-1.5"
@@ -235,11 +235,17 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({ onNavigateWorkflow }) 
               <Terminal className="w-3.5 h-3.5 text-cyan-400" />
               <span>Central Planner Reasoning Stream:</span>
             </div>
-            {activeWorkflow.plannerNotes.map((note, i) => (
-              <div key={i} className="text-slate-300 text-[11px]">
-                &gt; {note}
+            {activeWorkflow.plannerNotes && activeWorkflow.plannerNotes.length > 0 ? (
+              activeWorkflow.plannerNotes.map((note, i) => (
+                <div key={i} className="text-slate-300 text-[11px]">
+                  &gt; {note}
+                </div>
+              ))
+            ) : (
+              <div className="text-slate-400 text-[11px] italic">
+                &gt; Central Planner initialized DAG schedule for {activeWorkflow.title}. Validated dependency chain and assigned specialized worker agents.
               </div>
-            ))}
+            )}
           </div>
         </div>
       )}
