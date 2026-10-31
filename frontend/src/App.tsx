@@ -20,6 +20,7 @@ import { EmployeeOnboardingPage } from './pages/EmployeeOnboardingPage';
 import { CustomerRequestsPage } from './pages/CustomerRequestsPage';
 import { ProcurementVendorsPage } from './pages/ProcurementVendorsPage';
 import { ITIncidentAccessPage } from './pages/ITIncidentAccessPage';
+import { InvoiceProcessingPage } from './pages/InvoiceProcessingPage';
 
 // Flagship Engineering & Governance Modules
 import { OperationsCanvas } from './components/canvas/OperationsCanvas';
@@ -177,6 +178,11 @@ function MainRouter() {
     // 2d. IT Incident & PAM Access Control (CERT-In 6-Hour Disclosure & JIT Elevation)
     if (effectivePath.startsWith('/it-incident') || effectivePath === '/workflows?domain=it_incident') {
       return <ITIncidentAccessPage onNavigate={navigate} />;
+    }
+
+    // 2e. Intelligent Invoice Processing & 3-Way Matching Sentinel (Section 16 CGST & TDS)
+    if (effectivePath.startsWith('/invoice') || effectivePath === '/workflows?domain=invoice') {
+      return <InvoiceProcessingPage onNavigate={navigate} />;
     }
 
     // 3. Workflows & Pipeline (and domain-specific subroutes)

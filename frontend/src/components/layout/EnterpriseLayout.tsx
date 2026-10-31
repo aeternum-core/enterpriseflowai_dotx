@@ -128,7 +128,7 @@ export const EnterpriseLayout: React.FC<EnterpriseLayoutProps> = ({
     },
     {
       label: 'Invoice Processing',
-      path: '/workflows?domain=invoice',
+      path: '/invoice',
       icon: Receipt,
     },
     {
@@ -514,6 +514,7 @@ export const EnterpriseLayout: React.FC<EnterpriseLayoutProps> = ({
                   const isActive = 
                     currentPath === item.path || 
                     (item.path !== '/' && currentPath.startsWith(item.path)) ||
+                    (item.path === '/invoice' && currentPath.includes('domain=invoice')) ||
                     (item.path === '/customer' && currentPath.includes('domain=customer')) ||
                     (item.path === '/procurement' && currentPath.includes('domain=procurement')) ||
                     (item.path === '/it-incident' && currentPath.includes('domain=it_incident')) ||

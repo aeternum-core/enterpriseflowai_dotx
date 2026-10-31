@@ -146,3 +146,41 @@ def test_central_planner_interactive_endpoints(client):
     assert heal["success"] is True
     assert heal["replanStatus"] == "RECOVERY_COMPLETE_100_PERCENT"
     assert heal["healedTaskCount"] > heal["originalTaskCount"]
+
+def test_invoice_processing_endpoints(client):
+    """Verify Invoice Processing endpoints, 3-way match, and statutory TDS calculations"""
+    # 1. Invoices list & metrics
+    r_list = client.get("/api/invoice/invoices")
+    assert r_list.status_code == 200
+    assert r_list.json()["total"] >= 4
+
+    r_met = client.get("/api/invoice/metrics")
+    assert r_met.status_code == 200
+    assert r_met.json()["threeWayMatchAccuracyRate"] >= 99.0
+
+    # 2. Statutory TDS & GST Calculation (Section 194J)
+    r_calc = client.post("/api/invoice/calculate-tds", json={
+        "grossAmountInr": 485000.0,
+        "tdsSection": "194J",
+        "isInterState": False,
+        "gstRatePct": 18.0
+    })
+    assert r_calc.status_code == 200
+    calc = r_calc.json()
+    assert calc["tdsSection"] == "194J"
+    assert calc["tdsRatePct"] == 10.0
+    assert calc["netPayableInr"] < calc["grossAmountInr"]
+
+    # 3. Invoice upload & Central Planner dispatch
+    r_up = client.post("/api/invoice/upload", json={
+        "vendorName": "Wipro Cloud Infrastructure Ltd",
+        "vendorGstin": "29AAACW3421K1ZG",
+        "invoiceNumber": "WIPRO-TEST-9921",
+        "poNumber": "PO-TEST-8812",
+        "description": "Enterprise Cloud Migration Service",
+        "grossAmountInr": 485000.0,
+        "tdsSection": "194J"
+    })
+    assert r_up.status_code == 200
+    assert r_up.json()["success"] is True
+    assert "workflowId" in r_up.json()

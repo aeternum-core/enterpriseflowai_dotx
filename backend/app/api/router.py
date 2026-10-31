@@ -18,6 +18,7 @@ from app.api.customer import router as customer_router
 from app.api.procurement import router as procurement_router
 from app.api.it_incident import router as it_incident_router
 from app.api.planner import router as planner_router
+from app.api.invoice import router as invoice_router
 
 api_router = APIRouter()
 api_router.include_router(approvals_router)
@@ -36,6 +37,7 @@ api_router.include_router(customer_router)
 api_router.include_router(procurement_router)
 api_router.include_router(it_incident_router)
 api_router.include_router(planner_router)
+api_router.include_router(invoice_router)
 
 @api_router.get("/audit-logs")
 def get_audit_logs(db: Session = Depends(get_db)):
