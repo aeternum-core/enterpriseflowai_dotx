@@ -61,19 +61,16 @@ class DocumentVerificationAgent(BaseSpecializedAgent):
             key="doc_verification_agent",
             name="Document Verification Agent",
             domain="onboarding",
-            description="Verifies Indian statutory identity (Aadhaar/PAN), EPFO Form 11, and DPDP Act 2023 consent.",
-            system_instructions="Check validity of PAN via NSDL/ITD, tokenize Aadhaar in Indian UIDAI vault, and verify EPFO UAN.",
+            description="Verifies identity, tax forms (W-4/I-9), right-to-work documents and certifications.",
+            system_instructions="Check completeness, validity, and compliance of submitted candidate or vendor documentation.",
             allowed_tools=[]
         )
 
     def execute(self, db: Session, context: Dict[str, Any], workflow_id: str, task_id: str) -> Dict[str, Any]:
         return {
             "id_verified": True,
-            "pan_verification": "VALID_ACTIVE_NSDL",
-            "aadhaar_vault": "UIDAI_TOKENIZED_256BIT",
-            "epfo_form_11": "SUBMITTED_AND_LINKED",
-            "dpdp_act_compliance": "CONSENT_RECORDED_COMPLIANT",
-            "right_to_work": "VERIFIED_CITIZEN_ELIGIBLE",
+            "i9_compliance_check": "PASSED",
+            "right_to_work": "VERIFIED_ELIGIBLE",
             "background_check_id": f"BGC-{uuid.uuid4().hex[:6].upper()}",
             "status": "ALL_DOCUMENTS_VERIFIED"
         }
@@ -545,16 +542,16 @@ class IncidentInvestigationAgent(BaseSpecializedAgent):
         if is_access:
             return {
                 "incident_type": "PRIVILEGED_ACCESS_REQUEST",
-                "target_system": "Production Kubernetes Cluster (k8s-prod-in-west-1, Mumbai DC)",
-                "access_tier": "ClusterAdmin_JIT_4Hr",
+                "target_system": "Production Kubernetes Cluster (k8s-prod-us-east-1)",
+                "access_tier": "ClusterAdmin_JIT",
                 "requester": context.get("requester_user", "alex.rivera@enterpriseflow.corp"),
-                "justification": "Emergency hotfix patching for zero-day memory leak in auth proxy (CERT-In Ticket IN-2026-981)",
+                "justification": "Emergency hotfix patching for zero-day memory leak in auth proxy",
                 "status": "INVESTIGATION_COMPLETE"
             }
         else:
             return {
                 "incident_type": "SERVICE_DEGRADATION",
-                "target_system": "PostgreSQL Database Primary (db-prod-mumbai-01)",
+                "target_system": "PostgreSQL Database Primary (db-prod-01)",
                 "anomaly": "Deadlocked connection pool at 99.8% capacity",
                 "recommended_action": "Restart container pod and cycle connection pool",
                 "status": "INVESTIGATION_COMPLETE"

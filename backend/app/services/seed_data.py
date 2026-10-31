@@ -9,77 +9,9 @@ from app.models.agent import Agent
 from app.services.agent_registry import agent_registry
 from app.services.audit_service import audit_service
 
-def seed_database(db: Session, force: bool = False):
-    if force:
-        db.query(ApprovalComment).delete()
-        db.query(ApprovalHistory).delete()
-        db.query(ApprovalRequest).delete()
-        db.query(WorkflowContext).delete()
-        db.query(WorkflowTask).delete()
-        db.query(Workflow).delete()
-        db.query(ApprovalPolicy).delete()
-        db.query(ToolRegistry).delete()
-        db.query(Agent).delete()
-        for u in db.query(User).all():
-            u.roles.clear()
-        db.commit()
-        db.query(User).delete()
-        db.query(Role).delete()
-        db.query(Department).delete()
-        db.commit()
-    elif db.query(User).first():
-        # Check and add any missing tools
-        existing_keys = {t.key for t in db.query(ToolRegistry).all()}
-        new_tools = [
-            ToolRegistry(
-                key="gst_einvoice_verify_irn",
-                name="GST e-Invoice & IRN Validator",
-                category="Tax_Compliance",
-                description="Validates 64-character IRN and QR code digest under Rule 48(4) CGST Act via NIC portal.",
-                risk_level="LOW",
-                requires_approval=False,
-                is_simulated=True,
-                mock_service_name="Mock GST e-Invoice System (NIC / GSTN Portal)",
-                idempotent=True
-            ),
-            ToolRegistry(
-                key="msme_samadhaan_compliance_check",
-                name="MSME Samadhaan 45-Day Statutory Monitor",
-                category="Procurement_Compliance",
-                description="Enforces Section 15 45-day payment cap and Section 16 penal interest under MSMED Act 2006.",
-                risk_level="LOW",
-                requires_approval=False,
-                is_simulated=True,
-                mock_service_name="Mock MSME Samadhaan Statutory Monitor",
-                idempotent=True
-            ),
-            ToolRegistry(
-                key="rbi_tat_refund_calculate",
-                name="RBI TAT & Suo Motu Refund Compensation",
-                category="Payment_Compliance",
-                description="Enforces RBI T+1/T+5 digital transaction turnaround and auto-credits ₹100/day compensation.",
-                risk_level="LOW",
-                requires_approval=False,
-                is_simulated=True,
-                mock_service_name="Mock RBI Harmonisation of TAT Engine",
-                idempotent=True
-            ),
-            ToolRegistry(
-                key="cert_in_incident_report",
-                name="CERT-In Mandatory 6-Hour Incident Reporter",
-                category="Cyber_Compliance",
-                description="Dispatches mandatory 6-hour cybersecurity incident disclosure under Section 70B(6) IT Act 2000.",
-                risk_level="HIGH",
-                requires_approval=False,
-                is_simulated=True,
-                mock_service_name="Mock CERT-In Incident Reporting Bridge",
-                idempotent=True
-            )
-        ]
-        for t in new_tools:
-            if t.key not in existing_keys:
-                db.add(t)
-        db.commit()
+def seed_database(db: Session):
+    # Only seed if users table is empty
+    if db.query(User).first():
         return
 
     # 1. Departments
@@ -689,46 +621,7 @@ def seed_database(db: Session, force: bool = False):
     task_cust.required_approval_id = appr4.id
     db.commit()
 
-    # Seed Sample 5: Employee Onboarding & Equipment Allocation (Completed, Fully Compliant)
-    wf_onboard = Workflow(
-        id="wf_onb_rahul_05",
-        title="Employee Onboarding & Credential Provisioning: Rahul Sharma (Staff AI Architect)",
-        domain="onboarding",
-        status="COMPLETED",
-        priority="HIGH",
-        risk_level="LOW",
-        raw_input="Onboard Rahul Sharma as Staff AI Architect in Machine Learning Systems with ₹1,50,000 joining bonus and hardware package.",
-        requester_id="user_elena_vance",
-        started_at=now - timedelta(hours=8),
-        completed_at=now - timedelta(hours=7, minutes=45)
-    )
-    db.add(wf_onboard)
-    db.commit()
-
-    onb_tasks = [
-        ("task_onb_01", "task_onboard_parse", "Employee Request Agent", "Parse Candidate Profile & Joining Package (₹ INR)", 1),
-        ("task_onb_02", "task_onboard_verify_docs", "Document Verification Agent", "Verify PAN, Aadhaar & EPFO Form 11 (DPDP Act 2023)", 2),
-        ("task_onb_03", "task_onboard_hr_record", "HR Agent", "Establish Official HCM Record in Workday & EPFO Link", 3),
-        ("task_onb_04", "task_onboard_it_provision", "IT Provisioning Agent", "Provision Okta SSO & Allocate Corporate Equipment", 4),
-        ("task_onb_05", "task_onboard_notify", "Communication Agent", "Credit Joining Bonus & Dispatch Credentials to Personal Inbox", 5),
-    ]
-    for tid, tkey, ag_name, t_title, ord_num in onb_tasks:
-        db.add(WorkflowTask(
-            id=tid,
-            workflow_id=wf_onboard.id,
-            task_key=tkey,
-            agent_name=ag_name,
-            title=t_title,
-            status="COMPLETED",
-            execution_order=ord_num,
-            input_payload={"agent_key": ag_name.lower().replace(" ", "_"), "requires_approval": False},
-            output_payload={"status": "SUCCESS", "completed_step": t_title},
-            started_at=now - timedelta(hours=8) + timedelta(minutes=ord_num * 3),
-            completed_at=now - timedelta(hours=8) + timedelta(minutes=ord_num * 3 + 2)
-        ))
-    db.commit()
-
-    # Seed Sample 6: Historic Approved Request to give realistic metrics
+    # Seed Sample 5: Historic Approved Request to give realistic metrics
     appr_past = ApprovalRequest(
         id="appr_past_005",
         workflow_id=wf_inv.id,
@@ -779,10 +672,10 @@ def seed_database(db: Session, force: bool = False):
         actor_id="finance_disbursement_agent",
         actor_name="Finance Disbursement Agent",
         event_type="APPROVAL_REQUESTED",
-        action_description="Approval requested for Tata Communications Ltd invoice wire (₹24,80,000.00).",
+        action_description="Approval requested for Datadog invoice wire ($18,450.00).",
         workflow_id=wf_inv.id,
         task_id=task_inv.id,
-        payload_reference={"approval_id": appr1.id, "amount": 2480000.00},
+        payload_reference={"approval_id": appr1.id, "amount": 18450.00},
         execution_result="PAUSED"
     )
 

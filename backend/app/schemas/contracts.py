@@ -17,6 +17,7 @@ TaskStatus = Literal[
     "IN_PROGRESS",
     "WAITING_APPROVAL",
     "COMPLETED",
+    "SUCCESS",
     "FAILED",
     "SKIPPED",
     "RETRYING",

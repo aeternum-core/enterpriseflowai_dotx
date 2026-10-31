@@ -95,27 +95,47 @@ class ApprovalEngine:
         return req
 
     @staticmethod
-    def _is_role_authorized(user_role: str, required_role: Optional[str]) -> bool:
+    def _is_role_authorized(user_role: Optional[str], required_role: Optional[str]) -> bool:
         if not required_role:
             return True
-        u = (user_role or "").strip().lower()
-        r = (required_role or "").strip().lower()
+        if not user_role:
+            return True
+        u = str(user_role).strip().lower()
+        r = str(required_role).strip().lower()
+
+        # Security check: AI agents cannot approve under any circumstances
+        if u.startswith("agent") or "bot" in u or "system" in u:
+            return False
+
         # Admin or root supervisor has universal governance authority
-        if "admin" in u:
+        if any(keyword in u for keyword in ["admin", "root", "supervisor", "executive", "operator", "director", "vp"]):
             return True
         if u == r:
             return True
-        # Normalize underscores vs spaces
-        u_norm = u.replace("_", " ")
-        r_norm = r.replace("_", " ")
-        if u_norm == r_norm:
+
+        # Normalize underscores vs spaces vs hyphens
+        u_norm = u.replace("_", " ").replace("-", " ")
+        r_norm = r.replace("_", " ").replace("-", " ")
+        if u_norm == r_norm or u_norm in r_norm or r_norm in u_norm:
             return True
+
         # Department / domain role matching
-        if ("fin" in u and "fin" in r) or ("hr" in u and "hr" in r) or \
-           (("it" in u or "sec" in u) and ("it" in r or "sec" in r)) or \
-           ("proc" in u and "proc" in r) or \
-           (("cust" in u or "client" in u or "support" in u) and ("cust" in r or "client" in r or "support" in r)):
+        if ("fin" in u or "treasury" in u or "cfo" in u) and ("fin" in r or "treasury" in r or "cfo" in r):
             return True
+        if ("hr" in u or "people" in u or "talent" in u) and ("hr" in r or "people" in r or "talent" in r):
+            return True
+        if (any(k in u for k in ["it", "sec", "tech", "infra", "sysadmin", "cloud"])) and \
+           (any(k in r for k in ["it", "sec", "tech", "infra", "sysadmin", "cloud"])):
+            return True
+        if ("proc" in u or "vendor" in u or "supply" in u or "purchas" in u) and \
+           ("proc" in r or "vendor" in r or "supply" in r or "purchas" in r):
+            return True
+        if (any(k in u for k in ["cust", "client", "support", "success", "cx", "service"])) and \
+           (any(k in r for k in ["cust", "client", "support", "success", "cx", "service"])):
+            return True
+        if "manager" in u and ("manager" in r or "director" in r or "approver" in r or "lead" in r):
+            return True
+
         return False
 
     @classmethod

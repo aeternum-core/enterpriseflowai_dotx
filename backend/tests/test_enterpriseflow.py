@@ -93,6 +93,36 @@ def test_worker_contracts_and_shared_context(db):
     assert handoff.structured_parameters["amount"] == 18450.00
     assert handoff.idempotency_key == "IDEMP-TEST-CTX"
 
+    from app.agents.workers import worker_registry, DocumentAndDataWorker, BusinessOperationsWorker, ITAndIntegrationWorker
+    w1 = worker_registry.get_worker("DOCUMENT_AND_DATA_WORKER")
+    w2 = worker_registry.get_worker("document_and_data_worker")
+    w3 = worker_registry.get_worker("business_operations_worker")
+    w4 = worker_registry.get_worker("it_and_integration_worker")
+    assert w1 is DocumentAndDataWorker
+    assert w2 is DocumentAndDataWorker
+    assert w3 is BusinessOperationsWorker
+    assert w4 is ITAndIntegrationWorker
+
+    # Test worker execution
+    res1 = w1.execute(db, handoff)
+    assert res1.status in ("COMPLETED", "SUCCESS")
+    assert "amount" in res1.output_payload
+
+    # Test validate data Indian statutory compliance
+    handoff_stat = AgentTaskHandoff(
+        task_id="task_stat_01",
+        workflow_id="wf_ctx_test",
+        run_id="run_02",
+        source_agent="PLANNER",
+        target_agent="DOCUMENT_AND_DATA_WORKER",
+        action_type="VALIDATE_DATA",
+        structured_parameters={"candidate_name": "Rajesh Kumar"},
+        idempotency_key="IDEMP-STAT-01"
+    )
+    res_stat = w1.execute(db, handoff_stat)
+    assert res_stat.output_payload.get("pan_verification") == "VALID_ACTIVE_NSDL"
+    assert res_stat.output_payload.get("aadhaar_vault") == "UIDAI_TOKENIZED_256BIT"
+
 # --- CONTROLLED RESILIENCE & CHAOS TESTS ---
 
 def test_chaos_http_409_username_collision_recovery():
