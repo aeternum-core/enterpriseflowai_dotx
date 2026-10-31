@@ -281,7 +281,7 @@ export const ApprovalDrawer: React.FC<ApprovalDrawerProps> = ({
                   <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Financial Amount</div>
                   <div className="font-bold text-slate-900 text-sm mt-0.5">
                     {approval.financial_amount && approval.financial_amount > 0
-                      ? new Intl.NumberFormat('en-US', { style: 'currency', currency: approval.currency || 'USD' }).format(approval.financial_amount)
+                      ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: approval.currency || 'INR' }).format(approval.financial_amount)
                       : 'N/A (Access / Policy Action)'}
                   </div>
                 </div>

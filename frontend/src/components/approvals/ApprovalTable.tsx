@@ -249,7 +249,7 @@ export const ApprovalTable: React.FC<ApprovalTableProps> = ({
                     {/* Financial Amount */}
                     <td className="py-3.5 px-3 font-semibold text-slate-900">
                       {item.financial_amount && item.financial_amount > 0 ? (
-                        new Intl.NumberFormat('en-US', { style: 'currency', currency: item.currency || 'USD' }).format(item.financial_amount)
+                        new Intl.NumberFormat('en-IN', { style: 'currency', currency: item.currency || 'INR' }).format(item.financial_amount)
                       ) : (
                         <span className="text-slate-400 font-normal">—</span>
                       )}

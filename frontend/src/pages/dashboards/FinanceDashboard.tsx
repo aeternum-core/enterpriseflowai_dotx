@@ -72,12 +72,12 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ onNavigate }
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: `Invoice Processing - ${vendorName} ($${Number(amount).toLocaleString()})`,
+          title: `Invoice Processing - ${vendorName} (₹${Number(amount).toLocaleString('en-IN')})`,
           type: 'INVOICE_PROCESSING',
           submittedByUserId: user?.id || 'usr-fin-03',
           submittedByName: user?.name || 'Marcus Vance',
           submittedByRole: 'FINANCE_MANAGER',
-          priority: Number(amount) > 10000 ? 'HIGH' : 'MEDIUM',
+          priority: Number(amount) > 500000 ? 'HIGH' : 'MEDIUM',
           metadata: {
             vendorName,
             invoiceNumber,
@@ -103,23 +103,23 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ onNavigate }
 
   const handlePresetInvoice = (type: 'nexus' | 'acrotech' | 'datacenter') => {
     if (type === 'nexus') {
-      setVendorName('Nexus Cloud Technologies LLC');
+      setVendorName('Tata Communications Ltd');
       setInvoiceNumber('INV-2026-9481');
-      setAmount('24500.00');
+      setAmount('2480000.00');
       setPoNumber('PO-98421-CORP');
-      setFileName('Nexus_Cloud_Invoice_9481.pdf');
+      setFileName('Tata_Communications_Invoice_9481.pdf');
     } else if (type === 'acrotech') {
-      setVendorName('AcroTech Microchips Global');
-      setInvoiceNumber('ACM-88219');
-      setAmount('8250.00');
+      setVendorName('Infosys Cloud Services');
+      setInvoiceNumber('INF-88219');
+      setAmount('42500.00');
       setPoNumber('PO-10924-HW');
-      setFileName('AcroTech_Component_Delivery.pdf');
+      setFileName('Infosys_Component_Delivery.pdf');
     } else {
-      setVendorName('Equinix Global Datacenter Services');
-      setInvoiceNumber('EQX-2026-5501');
-      setAmount('48200.00');
+      setVendorName('Wipro Technologies Ltd');
+      setInvoiceNumber('WIP-2026-5501');
+      setAmount('4820000.00');
       setPoNumber('PO-55192-DATA');
-      setFileName('Equinix_Datacenter_Transit_Q4.pdf');
+      setFileName('Wipro_Datacenter_Transit_Q4.pdf');
     }
   };
 
@@ -190,12 +190,12 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ onNavigate }
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
           <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Pending Authorizations</div>
           <div className="text-2xl font-black text-amber-600">{pendingApprovals.length}</div>
-          <div className="text-[11px] text-slate-500 mt-1">Spend &gt; $10k policy checkpoint</div>
+          <div className="text-[11px] text-slate-500 mt-1">Spend &gt; ₹5 Lakhs policy checkpoint</div>
         </div>
 
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
           <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Duplicate Risk Prevented</div>
-          <div className="text-2xl font-black text-emerald-600">$0.00 Lost</div>
+          <div className="text-2xl font-black text-emerald-600">₹0.00 Lost</div>
           <div className="text-[11px] text-slate-500 mt-1">Zero double payments</div>
         </div>
 
@@ -234,7 +234,7 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ onNavigate }
                 <div className="my-2.5 p-2.5 bg-slate-50 rounded-lg text-xs space-y-1">
                   <div>Vendor: <strong className="text-slate-800">{appr.details?.vendor || 'Vendor'}</strong></div>
                   <div>PO Number: <strong className="text-slate-800">{appr.details?.poNumber || 'PO'}</strong></div>
-                  <div>Amount: <strong className="text-teal-700 font-bold">{appr.details?.amount || '$24,500.00'}</strong></div>
+                  <div>Amount: <strong className="text-teal-700 font-bold">{appr.details?.amount ? (typeof appr.details.amount === 'number' ? `₹${appr.details.amount.toLocaleString('en-IN')}` : String(appr.details.amount)) : '₹24,80,000.00'}</strong></div>
                   <div className="text-slate-500 text-[11px]">{appr.details?.reason}</div>
                 </div>
                 <div className="flex items-center gap-2 pt-2">
@@ -355,14 +355,14 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ onNavigate }
                   onClick={() => handlePresetInvoice('nexus')}
                   className="px-2.5 py-1 bg-white border border-teal-200 text-teal-800 rounded-lg text-xs font-semibold hover:bg-teal-100 transition"
                 >
-                  Nexus Cloud ($24,500 - Triggers Approval)
+                  Tata Communications (₹24,80,000 - Triggers Approval)
                 </button>
                 <button
                   type="button"
                   onClick={() => handlePresetInvoice('acrotech')}
                   className="px-2.5 py-1 bg-white border border-teal-200 text-teal-800 rounded-lg text-xs font-semibold hover:bg-teal-100 transition"
                 >
-                  AcroTech ($8,250 - Auto Reconciles)
+                  Infosys Cloud (₹42,500 - Auto-Settles)
                 </button>
               </div>
             </div>
@@ -404,7 +404,7 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ onNavigate }
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Total Amount ($ USD)</label>
+                <label className="block font-semibold text-slate-700 mb-1">Total Amount (₹ INR)</label>
                 <input
                   type="number"
                   step="0.01"
@@ -414,7 +414,7 @@ export const FinanceDashboard: React.FC<FinanceDashboardProps> = ({ onNavigate }
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold"
                 />
                 <span className="text-[10px] text-slate-400 mt-0.5 block">
-                  Amounts &gt; $10,000.00 will trigger the mandatory human payment authorization checkpoint.
+                  Amounts &gt; ₹5,00,000.00 will trigger the mandatory human payment authorization checkpoint.
                 </span>
               </div>
 

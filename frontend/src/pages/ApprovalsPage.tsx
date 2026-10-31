@@ -158,13 +158,13 @@ export const ApprovalsPage: React.FC<ApprovalsPageProps> = ({ onNavigateWorkflow
                 <div className="flex items-center gap-2.5 flex-wrap">
                   <span className="font-mono text-xs font-bold text-slate-400">{appr.id}</span>
                   <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${getStateBadge(appr.state || (appr as any).status)}`}>
-                    {(appr.state || (appr as any).status || 'PENDING').replace(/_/g, ' ')}
+                    {String(appr.state || (appr as any).status || 'PENDING').replace(/_/g, ' ')}
                   </span>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getRiskBadge(appr.riskLevel || (appr as any).risk_level)}`}>
                     Risk: {appr.riskLevel || (appr as any).risk_level || 'LOW'}
                   </span>
                   <span className="text-xs text-slate-500 font-semibold">
-                    Authorized Role: <strong className="text-slate-800">{(appr.approverRoleRequired || (appr as any).required_role || 'OPERATOR').replace(/_/g, ' ')}</strong>
+                    Authorized Role: <strong className="text-slate-800">{String(appr.approverRoleRequired || (appr as any).required_role || 'OPERATOR').replace(/_/g, ' ')}</strong>
                   </span>
                 </div>
 
@@ -256,7 +256,7 @@ export const ApprovalsPage: React.FC<ApprovalsPageProps> = ({ onNavigateWorkflow
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Approver Role:</span>
-                <span className="font-bold text-blue-700">{(selectedApproval.approverRoleRequired || (selectedApproval as any).required_role || 'OPERATOR').replace(/_/g, ' ')}</span>
+                <span className="font-bold text-blue-700">{String(selectedApproval.approverRoleRequired || (selectedApproval as any).required_role || 'OPERATOR').replace(/_/g, ' ')}</span>
               </div>
             </div>
 

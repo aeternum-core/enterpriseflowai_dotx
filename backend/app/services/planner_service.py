@@ -33,14 +33,21 @@ class CentralPlannerService:
             domain = "customer"
             title = "General Business Request Processing"
 
-        # Extract numeric financial figures if present ($32,000.00 or 32000 USD or 450 dollars)
+        # Extract numeric financial figures if present (₹32,000.00 or Rs. 32000 or 32000 INR or $32,000)
         amount = None
-        amount_match = re.search(r'\$\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?|[0-9]+(?:\.[0-9]{2})?)', prompt)
+        amount_match = re.search(r'(?:₹|rs\.?|inr|\$)\s*([0-9]{1,3}(?:,[0-9]{2,3})*(?:\.[0-9]{2})?|[0-9]+(?:\.[0-9]{2})?)', prompt, re.IGNORECASE)
         if not amount_match:
-            amount_match = re.search(r'([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?|[0-9]+(?:\.[0-9]{2})?)\s*(?:dollars|usd|\$)', prompt, re.IGNORECASE)
+            amount_match = re.search(r'([0-9]{1,3}(?:,[0-9]{2,3})*(?:\.[0-9]{2})?|[0-9]+(?:\.[0-9]{2})?)\s*(?:rupees|rs\.?|inr|lakh|crore|dollars|usd|\$|₹)', prompt, re.IGNORECASE)
         if amount_match:
             try:
-                amount = float(amount_match.group(1).replace(",", ""))
+                val_str = amount_match.group(1).replace(",", "")
+                amount = float(val_str)
+                # Handle lakh or crore scale if detected
+                lower_p = prompt.lower()
+                if "crore" in lower_p and amount < 1000:
+                    amount *= 10000000.0
+                elif "lakh" in lower_p and amount < 1000:
+                    amount *= 100000.0
             except ValueError:
                 pass
 
@@ -112,7 +119,7 @@ class CentralPlannerService:
             ]
 
         elif domain == "invoice":
-            inv_amount = amount or 18450.00
+            inv_amount = amount or 2480000.00
             return [
                 {
                     "task_key": "task_inv_intake",
@@ -122,7 +129,7 @@ class CentralPlannerService:
                     "execution_order": 1,
                     "depends_on": [],
                     "requires_approval": False,
-                    "description": "Validate document digital signature and OCR fidelity."
+                    "description": "Validate document digital signature, GSTIN match, and OCR fidelity."
                 },
                 {
                     "task_key": "task_inv_extract",
@@ -156,15 +163,15 @@ class CentralPlannerService:
                 },
                 {
                     "task_key": "task_inv_disburse",
-                    "title": f"Execute SAP S/4HANA Payment Disbursement (${inv_amount:,.2f})",
+                    "title": f"Execute SAP / RazorpayX Payment Disbursement (₹{inv_amount:,.2f})",
                     "agent_name": "Finance Disbursement Agent",
                     "agent_key": "finance_disbursement_agent",
                     "execution_order": 5,
                     "depends_on": ["task_inv_validate"],
                     "requires_approval": True, # Human Approval Gate
-                    "risk_level": "HIGH" if inv_amount < 50000 else "CRITICAL",
-                    "required_role": "Finance Director" if inv_amount < 50000 else "VP Finance",
-                    "description": "Authorize and disburse wire transfer to vendor."
+                    "risk_level": "HIGH" if inv_amount < 2500000 else "CRITICAL",
+                    "required_role": "Finance Director" if inv_amount < 2500000 else "VP Finance",
+                    "description": "Authorize and disburse wire transfer to vendor via RBI RTGS rail."
                 },
                 {
                     "task_key": "task_inv_notify",
@@ -179,8 +186,8 @@ class CentralPlannerService:
             ]
 
         elif domain == "customer":
-            ref_amt = amount or 450.00
-            req_appr = ref_amt > 200.0
+            ref_amt = amount or 45000.00
+            req_appr = ref_amt > 15000.0 or (ref_amt > 200.0 and ref_amt <= 2000.0)
             return [
                 {
                     "task_key": "task_cust_classify",
@@ -204,7 +211,7 @@ class CentralPlannerService:
                 },
                 {
                     "task_key": "task_cust_resolve",
-                    "title": f"Formulate Remedy & Credit Adjustment (${ref_amt:,.2f})",
+                    "title": f"Formulate Remedy & Credit Adjustment (₹{ref_amt:,.2f})",
                     "agent_name": "Customer Resolution Agent",
                     "agent_key": "customer_resolution_agent",
                     "execution_order": 3,
@@ -212,7 +219,7 @@ class CentralPlannerService:
                     "requires_approval": req_appr,
                     "risk_level": "HIGH" if req_appr else "LOW",
                     "required_role": "Support Manager",
-                    "description": "Evaluate concession policy limit ($200 auto-limit); request supervisor authorization if exceeded."
+                    "description": "Evaluate concession policy limit (₹15,000 auto-limit); request supervisor authorization if exceeded."
                 },
                 {
                     "task_key": "task_cust_execute",
@@ -237,7 +244,7 @@ class CentralPlannerService:
             ]
 
         elif domain == "procurement":
-            po_val = amount or 78500.00
+            po_val = amount or 7850000.00
             return [
                 {
                     "task_key": "task_proc_analyze",
@@ -251,13 +258,13 @@ class CentralPlannerService:
                 },
                 {
                     "task_key": "task_proc_execute",
-                    "title": f"Activate Vendor & Issue Coupa PO (${po_val:,.2f})",
+                    "title": f"Activate Vendor & Issue ERP Purchase Order (₹{po_val:,.2f})",
                     "agent_name": "Procurement Agent",
                     "agent_key": "procurement_execution_agent",
                     "execution_order": 2,
                     "depends_on": ["task_proc_analyze"],
                     "requires_approval": True,
-                    "risk_level": "CRITICAL" if po_val > 50000 else "HIGH",
+                    "risk_level": "CRITICAL" if po_val > 5000000 or (po_val > 50000 and po_val <= 100000) else "HIGH",
                     "required_role": "Procurement Manager",
                     "description": "Activate vendor master record and dispatch binding purchase order."
                 },

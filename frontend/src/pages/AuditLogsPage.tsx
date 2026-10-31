@@ -251,7 +251,7 @@ export const AuditLogsPage: React.FC<{ onNavigateWorkflow: (id: string) => void 
                         {log.action}
                       </span>
                       <span className="font-semibold text-slate-800">
-                        {log.userName || 'Anonymous User'} ({log.userRole?.replace('_', ' ') || 'Guest'})
+                        {log.userName || 'Anonymous User'} ({String(log.userRole || 'Guest').replace(/_/g, ' ')})
                       </span>
                     </div>
                     <span className="text-slate-400 font-mono text-[11px]">

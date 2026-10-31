@@ -33,7 +33,7 @@ def seed_database(db: Session):
         Role(id="role_hr_dir", name="HR Director", description="Authorizes executive onboarding and sensitive HR actions"),
         Role(id="role_proc_mgr", name="Procurement Manager", description="Authorizes vendor activations and purchase orders"),
         Role(id="role_supp_mgr", name="Support Manager", description="Authorizes customer refund exceptions"),
-        Role(id="role_vp", name="VP Finance", description="Authorizes critical transactions above $50k"),
+        Role(id="role_vp", name="VP Finance", description="Authorizes critical transactions above ₹25 Lakhs"),
         Role(id="role_emp", name="Senior Software Engineer", description="Standard business user / requester"),
     ]
     for r in roles:
@@ -264,12 +264,12 @@ def seed_database(db: Session):
     # Seed Sample 1: Invoice Approval (Pending, High Value)
     wf_inv = Workflow(
         id="wf_inv_datadog_01",
-        title="Intelligent Invoice Processing: Datadog Monitoring Inc.",
+        title="Intelligent Invoice Processing: Tata Communications Ltd",
         domain="invoice",
         status="WAITING_APPROVAL",
         priority="HIGH",
         risk_level="HIGH",
-        raw_input="Process annual enterprise infrastructure telemetry invoice from Datadog for $18,450.00.",
+        raw_input="Process annual enterprise infrastructure telemetry invoice from Tata Communications Ltd for ₹24,80,000.00.",
         requester_id="user_david_chen",
         started_at=now - timedelta(hours=2)
     )
@@ -281,7 +281,7 @@ def seed_database(db: Session):
         workflow_id=wf_inv.id,
         task_key="task_inv_disburse",
         agent_name="Finance Disbursement Agent",
-        title="Execute SAP S/4HANA Payment Disbursement ($18,450.00)",
+        title="Execute SAP / RazorpayX Payment Disbursement (₹24,80,000.00)",
         status="WAITING_APPROVAL",
         execution_order=5,
         input_payload={"agent_key": "finance_disbursement_agent", "requires_approval": True}
@@ -293,7 +293,7 @@ def seed_database(db: Session):
         id="appr_inv_001",
         workflow_id=wf_inv.id,
         task_id=task_inv.id,
-        title="Approve Invoice Disbursement: Datadog Monitoring Inc.",
+        title="Approve Invoice Disbursement: Tata Communications Ltd",
         domain="invoice",
         risk_level="HIGH",
         status="PENDING",
@@ -301,14 +301,14 @@ def seed_database(db: Session):
         requested_by_agent="Finance Disbursement Agent",
         requesting_employee="David Chen",
         department="Finance & Treasury",
-        financial_amount=18450.00,
-        currency="USD",
-        business_justification="Annual telemetry licensing for enterprise Kubernetes clusters. Within FY26 Q4 Cloud Ops budget.",
-        proposed_action="Disburse wire of $18,450.00 to Datadog Monitoring Inc. via SAP S/4HANA treasury API.",
+        financial_amount=2480000.00,
+        currency="INR",
+        business_justification="Annual fiber and cloud transit licensing for Mumbai and Bengaluru Kubernetes clusters. Within FY26 Q4 IT budget.",
+        proposed_action="Disburse wire of ₹24,80,000.00 to Tata Communications Ltd via RBI RTGS rail.",
         proposed_payload={
-            "amount": 18450.00,
-            "currency": "USD",
-            "vendor": "Datadog Monitoring Inc.",
+            "amount": 2480000.00,
+            "currency": "INR",
+            "vendor": "Tata Communications Ltd",
             "invoice_number": "INV-2026-8941",
             "cost_center": "CC-ENG-INFRA-401"
         },
@@ -320,7 +320,7 @@ def seed_database(db: Session):
             "duplicate_scan": "CLEARED",
             "budget_status": "SUFFICIENT"
         },
-        risk_assessment="High financial value wire transfer (> $5,000 threshold). Requires Finance Director verification.",
+        risk_assessment="High financial value wire transfer (> ₹5,00,000 threshold). Requires Finance Director verification.",
         required_role="Finance Director",
         due_date=now + timedelta(hours=6),
         created_at=now - timedelta(hours=2)
@@ -370,11 +370,11 @@ def seed_database(db: Session):
         requesting_employee="Alex Rivera",
         department="Information Technology & Security",
         financial_amount=0.00,
-        currency="USD",
+        currency="INR",
         business_justification="P1 incident triage: auth-proxy pod undergoing crash loops. Requires direct cluster admin debug access.",
-        proposed_action="Issue ephemeral 4-hour ClusterAdmin token on cluster k8s-prod-us-east-1 via Okta PAM.",
+        proposed_action="Issue ephemeral 4-hour ClusterAdmin token on Mumbai cluster k8s-prod-in-west-1 via Okta PAM.",
         proposed_payload={
-            "target_system": "Production Kubernetes Cluster (k8s-prod-us-east-1)",
+            "target_system": "Production Kubernetes Cluster (k8s-prod-in-west-1)",
             "access_tier": "ClusterAdmin_JIT",
             "duration_hours": 4,
             "session_recording": True
@@ -398,12 +398,12 @@ def seed_database(db: Session):
     # Seed Sample 3: Procurement PO (Pending, Critical Financial Value)
     wf_proc = Workflow(
         id="wf_proc_nvidia_03",
-        title="Enterprise Procurement: NVIDIA H100 AI Supercomputing Cluster",
+        title="Enterprise Procurement: NVIDIA H100 AI Supercomputing Cluster via Wipro",
         domain="procurement",
         status="WAITING_APPROVAL",
         priority="HIGH",
         risk_level="CRITICAL",
-        raw_input="Procure 8x NVIDIA H100 DGX nodes under enterprise research agreement for $78,500.00.",
+        raw_input="Procure 8x NVIDIA H100 DGX nodes under enterprise research agreement from Wipro Technologies for ₹78,50,000.00.",
         requester_id="user_david_chen",
         started_at=now - timedelta(hours=5)
     )
@@ -415,7 +415,7 @@ def seed_database(db: Session):
         workflow_id=wf_proc.id,
         task_key="task_proc_execute",
         agent_name="Procurement Agent",
-        title="Activate Vendor & Issue Coupa PO ($78,500.00)",
+        title="Activate Vendor & Issue ERP Purchase Order (₹78,50,000.00)",
         status="WAITING_APPROVAL",
         execution_order=2,
         input_payload={"agent_key": "procurement_execution_agent", "requires_approval": True}
@@ -427,7 +427,7 @@ def seed_database(db: Session):
         id="appr_proc_003",
         workflow_id=wf_proc.id,
         task_id=task_proc.id,
-        title="Vendor Onboarding & Hardware PO: NVIDIA Enterprise Cloud",
+        title="Vendor Onboarding & Hardware PO: Wipro Technologies Ltd",
         domain="procurement",
         risk_level="CRITICAL",
         status="PENDING",
@@ -435,23 +435,24 @@ def seed_database(db: Session):
         requested_by_agent="Procurement Agent",
         requesting_employee="Marcus Brody",
         department="Global Procurement",
-        financial_amount=78500.00,
-        currency="USD",
-        business_justification="Hardware commitment for AI Model Optimization lab approved under Q4 R&D grant.",
-        proposed_action="Execute Coupa vendor activation and dispatch Purchase Order PO-2026-8812 for $78,500.00.",
+        financial_amount=7850000.00,
+        currency="INR",
+        business_justification="Hardware commitment for Bengaluru AI Model Optimization lab approved under FY26 R&D grant.",
+        proposed_action="Execute ERP vendor activation and dispatch Purchase Order PO-2026-8812 for ₹78,50,000.00 via HDFC Bank Corporate Rail.",
         proposed_payload={
-            "vendor_name": "NVIDIA Enterprise Cloud",
-            "total_value": 78500.00,
+            "vendor_name": "Wipro Technologies Ltd",
+            "total_value": 7850000.00,
             "lead_time_days": 10
         },
         ai_summary="Quotation Analysis Agent confirmed 14.5% volume discount compared to standard catalog rate; 36-month OEM warranty confirmed.",
         tools_invoked=["coupa_activate_vendor", "coupa_create_po"],
         validation_results={
             "ofac_sanctions": "CLEARED",
-            "tax_w9_verified": True,
+            "gstin_verified": True,
+            "pan_verified": True,
             "sole_source_justified": True
         },
-        risk_assessment="CRITICAL RISK: Major capital commitment exceeding $50k threshold.",
+        risk_assessment="CRITICAL RISK: Major capital commitment exceeding ₹50,00,000 threshold.",
         required_role="Procurement Manager",
         due_date=now + timedelta(hours=18),
         created_at=now - timedelta(hours=5)
@@ -463,12 +464,12 @@ def seed_database(db: Session):
     # Seed Sample 4: Customer SLA Refund (Overdue!)
     wf_cust = Workflow(
         id="wf_cust_sla_04",
-        title="Customer Request Resolution: GlobalCorp SLA Credit Dispute",
+        title="Customer Request Resolution: Reliance Digital Systems SLA Credit Dispute",
         domain="customer",
         status="WAITING_APPROVAL",
         priority="MEDIUM",
         risk_level="MEDIUM",
-        raw_input="Customer GlobalCorp demands $450 credit adjustment for EU-West API degradation.",
+        raw_input="Customer Reliance Digital Systems demands ₹45,000.00 credit adjustment for Mumbai Gateway API degradation.",
         requester_id="user_sarah_lin",
         started_at=now - timedelta(hours=28)
     )
@@ -499,7 +500,7 @@ def seed_database(db: Session):
         status="COMPLETED",
         execution_order=2,
         input_payload={"agent_key": "customer_kb_agent", "dependencies": ["task_cust_classify"]},
-        output_payload={"sla_tier": "ENTERPRISE_PLATINUM_99_9", "contract_limit": 5000.00, "latency_sla_breached": True, "entitled_credit_percentage": 10.0},
+        output_payload={"sla_tier": "ENTERPRISE_PLATINUM_99_9", "contract_limit": 500000.00, "latency_sla_breached": True, "entitled_credit_percentage": 10.0},
         started_at=now - timedelta(hours=28) + timedelta(seconds=15),
         completed_at=now - timedelta(hours=28) + timedelta(seconds=32)
     )
@@ -510,7 +511,7 @@ def seed_database(db: Session):
         workflow_id=wf_cust.id,
         task_key="task_cust_resolve",
         agent_name="Customer Resolution Agent",
-        title="Formulate Remedy & Credit Adjustment ($450.00)",
+        title="Formulate Remedy & Credit Adjustment (₹45,000.00)",
         status="WAITING_APPROVAL",
         execution_order=3,
         input_payload={"agent_key": "customer_resolution_agent", "requires_approval": True, "dependencies": ["task_cust_kb"]},
@@ -547,7 +548,7 @@ def seed_database(db: Session):
         id="appr_cust_004",
         workflow_id=wf_cust.id,
         task_id=task_cust.id,
-        title="Enterprise Customer SLA Refund Adjustment: GlobalCorp",
+        title="Enterprise Customer SLA Refund Adjustment: Reliance Digital Systems",
         domain="customer",
         risk_level="MEDIUM",
         status="PENDING",
@@ -555,19 +556,19 @@ def seed_database(db: Session):
         requested_by_agent="Customer Resolution Agent",
         requesting_employee="Elena Vance",
         department="Customer Experience & Support",
-        financial_amount=450.00,
-        currency="USD",
-        business_justification="Verified 18-minute API latency spike during EU peak hours violating Tier-1 contractual SLA.",
-        proposed_action="Apply credit memo of $450.00 to GlobalCorp account via Zendesk Support API.",
+        financial_amount=45000.00,
+        currency="INR",
+        business_justification="Verified 18-minute API latency spike during Mumbai peak hours violating Tier-1 contractual SLA.",
+        proposed_action="Apply credit memo of ₹45,000.00 to Reliance Digital Systems account via Customer Portal API.",
         proposed_payload={
-            "refund_amount": 450.00,
-            "customer_email": "billing@globalcorp.eu",
+            "refund_amount": 45000.00,
+            "customer_email": "billing@reliancedigital.in",
             "tier": "ENTERPRISE_GOLD"
         },
         ai_summary="Classification agent tagged NEGATIVE sentiment and high churn risk. Credit calculation verified against SLA policy table.",
         tools_invoked=["zendesk_update_ticket"],
         validation_results={"sla_breach_verified": True, "limit_under_contract": True},
-        risk_assessment="MEDIUM RISK: Goodwill credit adjustment exceeds Tier 1 auto-settlement limit ($200).",
+        risk_assessment="MEDIUM RISK: Goodwill credit adjustment exceeds Tier 1 auto-settlement limit (₹15,000).",
         required_role="Support Manager",
         due_date=now - timedelta(hours=4), # OVERDUE!
         created_at=now - timedelta(hours=28)
@@ -581,7 +582,7 @@ def seed_database(db: Session):
         id="appr_past_005",
         workflow_id=wf_inv.id,
         task_id=task_inv.id,
-        title="Approved: Snowflake Data Cloud Q3 Settlement",
+        title="Approved: Infosys Cloud Infrastructure Q3 Settlement",
         domain="invoice",
         risk_level="HIGH",
         status="APPROVED",
@@ -589,12 +590,12 @@ def seed_database(db: Session):
         requested_by_agent="Finance Disbursement Agent",
         requesting_employee="David Chen",
         department="Finance & Treasury",
-        financial_amount=45550.00,
-        currency="USD",
+        financial_amount=1545000.00,
+        currency="INR",
         business_justification="Quarterly analytics warehouse usage.",
-        proposed_action="Disburse wire to Snowflake Inc.",
-        proposed_payload={"amount": 45550.00, "vendor": "Snowflake Inc."},
-        approved_payload={"amount": 45550.00, "vendor": "Snowflake Inc."},
+        proposed_action="Disburse wire to Infosys Technologies Ltd.",
+        proposed_payload={"amount": 1545000.00, "vendor": "Infosys Technologies Ltd"},
+        approved_payload={"amount": 1545000.00, "vendor": "Infosys Technologies Ltd"},
         ai_summary="Full 3-way reconciliation completed.",
         tools_invoked=["sap_disburse_payment"],
         validation_results={"status": "ALL_CHECKS_PASSED"},

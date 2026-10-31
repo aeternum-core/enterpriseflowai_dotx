@@ -192,12 +192,12 @@ class DocumentExtractionAgent(BaseSpecializedAgent):
             "invoice_date": "2026-10-24",
             "due_date": "2026-11-24",
             "amount": amount,
-            "currency": "USD",
+            "currency": "INR",
             "line_items": [
                 {"description": "Annual Infrastructure Telemetry Tier 4", "qty": 1, "unit_price": amount * 0.8},
                 {"description": "Enterprise 24/7 TAM Support Surcharge", "qty": 1, "unit_price": amount * 0.2}
             ],
-            "tax_amount": amount * 0.08,
+            "tax_amount": amount * 0.18,
             "status": "EXTRACTION_COMPLETE"
         }
 
@@ -262,7 +262,7 @@ class FinanceDisbursementAgent(BaseSpecializedAgent):
         
         payload = {
             "amount": amount,
-            "currency": "USD",
+            "currency": "INR",
             "vendor": vendor,
             "invoice_number": inv_num,
             "domain": "invoice"
@@ -367,7 +367,7 @@ class CustomerResolutionAgent(BaseSpecializedAgent):
         )
         return {
             "resolution": res,
-            "customer_response": f"Apologies for the SLA latency variance. We have issued a credit adjustment of ${refund_amount:.2f} to your account.",
+            "customer_response": f"Apologies for the SLA latency variance. We have issued a credit adjustment of ₹{refund_amount:,.2f} to your account via domestic instant settlement rail.",
             "status": "CUSTOMER_RESOLVED"
         }
 
@@ -426,7 +426,7 @@ class ProcurementAnalysisAgent(BaseSpecializedAgent):
         return {
             "recommended_vendor": vendor,
             "total_value": value,
-            "currency": "USD",
+            "currency": "INR",
             "lead_time_days": 10,
             "warranty_months": 36,
             "volume_discount_pct": 14.5,

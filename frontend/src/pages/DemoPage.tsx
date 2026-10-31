@@ -131,7 +131,7 @@ export const DemoPage: React.FC<{ onNavigateWorkflow: (id: string) => void }> = 
           </div>
         </div>
 
-        {/* Scenario 2: $48,200 Datacenter Invoice */}
+        {/* Scenario 2: ₹24,80,000 Datacenter Invoice */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs flex flex-col justify-between hover:border-teal-300 transition">
           <div>
             <div className="flex items-center justify-between text-xs mb-2">
@@ -141,10 +141,10 @@ export const DemoPage: React.FC<{ onNavigateWorkflow: (id: string) => void }> = 
               <span className="text-amber-600 font-bold text-[11px]">Checkpoint: Finance Mgr</span>
             </div>
             <h2 className="text-base font-bold text-slate-900">
-              $48,200 Datacenter Transit Invoice
+              ₹24,80,000 Datacenter Transit Invoice
             </h2>
             <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-              Multimodal Gemini OCR extraction, ledger duplicate collision scan, 3-way PO reconciliation, and <strong>high-value spend authorization gate (&gt; $10k policy)</strong> before ERP wire release.
+              Multimodal Gemini OCR extraction, ledger duplicate collision scan, 3-way PO reconciliation, and <strong>high-value spend authorization gate (&gt; ₹5 Lakhs policy)</strong> before ERP wire release.
             </p>
             <div className="mt-3 text-[11px] text-slate-400 font-mono">
               Agents: Intake → Gemini Extract → Duplicate Detect → 3-Way Recon → Payment Settlement
@@ -152,7 +152,7 @@ export const DemoPage: React.FC<{ onNavigateWorkflow: (id: string) => void }> = 
           </div>
 
           <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-[11px] text-slate-500 font-medium">Vendor: Equinix Global Fiber</span>
+            <span className="text-[11px] text-slate-500 font-medium">Vendor: Tata Communications Ltd</span>
             <button
               onClick={() => handleLaunchScenario('large_invoice_approval')}
               disabled={isRunningScenario !== null}
@@ -207,10 +207,10 @@ export const DemoPage: React.FC<{ onNavigateWorkflow: (id: string) => void }> = 
               <span className="text-emerald-600 font-bold text-[11px]">Autonomous Resolution</span>
             </div>
             <h2 className="text-base font-bold text-slate-900">
-              Quantum Health Systems 504 Timeout Escalation
+              Reliance Digital Systems 504 Timeout Escalation (₹45,000 Credit)
             </h2>
             <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-              Urgent SLA classification, ARR customer data retrieval, knowledge base vector lookup, Gemini calibrated technical response synthesis with 98% confidence score, and Zendesk delivery.
+              Urgent SLA classification, ARR customer data retrieval, knowledge base vector lookup, Gemini calibrated technical response synthesis with 98% confidence score, and customer credit adjustment.
             </p>
             <div className="mt-3 text-[11px] text-slate-400 font-mono">
               Agents: Classify → Cust Info → KB Retrieval → Gemini Resolution → Comm Agent
@@ -218,7 +218,7 @@ export const DemoPage: React.FC<{ onNavigateWorkflow: (id: string) => void }> = 
           </div>
 
           <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-[11px] text-slate-500 font-medium">Customer: Quantum Health</span>
+            <span className="text-[11px] text-slate-500 font-medium">Customer: Reliance Digital Systems</span>
             <button
               onClick={() => handleLaunchScenario('customer_sla_escalation')}
               disabled={isRunningScenario !== null}

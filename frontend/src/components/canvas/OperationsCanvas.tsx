@@ -396,7 +396,7 @@ export const OperationsCanvas: React.FC<OperationsCanvasProps> = ({
                 {pendingApproval.actionRequested || pendingApproval.title}
               </h3>
               <p className="text-xs text-slate-300 mt-0.5">
-                Authorized Role: <strong className="text-amber-300">{pendingApproval.approverRoleRequired?.replace('_', ' ') || pendingApproval.required_role || 'Support Manager'}</strong> &bull; Amount: <strong className="text-emerald-400">${pendingApproval.financialAmount ?? 450.00}</strong>
+                Authorized Role: <strong className="text-amber-300">{String(pendingApproval.approverRoleRequired || pendingApproval.required_role || 'Support Manager').replace(/_/g, ' ')}</strong> &bull; Amount: <strong className="text-emerald-400">₹{Number(pendingApproval.financialAmount ?? (pendingApproval.financial_amount || 45000.00)).toLocaleString('en-IN')}</strong>
               </p>
             </div>
           </div>

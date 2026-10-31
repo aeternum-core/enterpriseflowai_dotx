@@ -85,21 +85,21 @@ class MockEnterpriseIntegrations:
             raise RuntimeError(f"CHAOS_INJECTED: {fault['error']} - {fault['message']}")
 
         amount = data.get("amount", 0.0)
-        currency = data.get("currency", "USD")
-        vendor = data.get("vendor", "Acme Cloud Services")
+        currency = data.get("currency", "INR")
+        vendor = data.get("vendor", "Tata Communications Ltd")
         invoice_num = data.get("invoice_number", "INV-2026-001")
         return {
             "status": "EXECUTED",
-            "service": "Mock SAP S/4HANA Finance Disbursement API (Simulated)",
+            "service": "Mock SAP S/4HANA & RazorpayX Corporate Payouts (Simulated)",
             "is_simulated": True,
             "disbursement_id": f"SAP-PAY-{uuid.uuid4().hex[:10].upper()}",
-            "transaction_reference": f"ACH-WIRE-{uuid.uuid4().hex[:8].upper()}",
+            "transaction_reference": f"RTGS-IN-{uuid.uuid4().hex[:8].upper()}",
             "cleared_amount": amount,
             "currency": currency,
             "vendor_name": vendor,
             "invoice_number": invoice_num,
-            "ledger_account": "21000-Accounts-Payable",
-            "settlement_date": "Next Business Day (ACH/SWIFT)"
+            "ledger_account": "21000-Accounts-Payable-INR",
+            "settlement_date": "Instant Settlement (RBI RTGS / NEFT Commercial Rail)"
         }
 
     # --- Customer Support Integration (Zendesk / Salesforce) ---

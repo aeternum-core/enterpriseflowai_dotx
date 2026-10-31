@@ -291,7 +291,7 @@ export const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ onNavigate
                       wf.status === 'WAITING_FOR_APPROVAL' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
                       'bg-indigo-50 text-indigo-700 border border-indigo-200'
                     }`}>
-                      {(wf.status || 'PENDING').replace(/_/g, ' ')}
+                      {String(wf.status || 'PENDING').replace(/_/g, ' ')}
                     </span>
                   </div>
                   <div className="text-[11px] text-slate-500 mt-1 flex items-center gap-3">

@@ -36,7 +36,7 @@ class ApprovalRequest(Base):
     requesting_employee = Column(String(150), nullable=True) # Human requester if applicable
     department = Column(String(100), nullable=False)
     financial_amount = Column(Float, nullable=True)
-    currency = Column(String(10), default="USD")
+    currency = Column(String(10), default="INR")
 
     # Business Details
     business_justification = Column(Text, nullable=False)

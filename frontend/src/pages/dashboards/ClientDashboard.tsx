@@ -26,11 +26,11 @@ export const ClientDashboard: React.FC<ClientDashboardProps> = ({ onNavigate }) 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form state
-  const [customerName, setCustomerName] = useState('Apex Financial Technologies');
+  const [customerName, setCustomerName] = useState('Reliance Digital Systems');
   const [ticketNumber, setTicketNumber] = useState('TKT-84910');
-  const [customerTier, setCustomerTier] = useState('Enterprise Tier 1 ($240k ARR)');
+  const [customerTier, setCustomerTier] = useState('Enterprise Tier 1 (₹2.4 Cr ARR)');
   const [inquiryText, setInquiryText] = useState(
-    'Our automated end-of-month settlement webhook is failing with 429 Too Many Requests. We need urgent quota adjustment.'
+    'Our automated Mumbai gateway settlement webhook is failing with 504 Gateway Timeout. We request immediate credit adjustment.'
   );
 
   const fetchClientData = async () => {
@@ -89,20 +89,20 @@ export const ClientDashboard: React.FC<ClientDashboardProps> = ({ onNavigate }) 
 
   const handlePreset = (type: 'apex' | 'quantum' | 'fintech') => {
     if (type === 'apex') {
-      setCustomerName('Apex Financial Technologies');
+      setCustomerName('Reliance Digital Systems');
       setTicketNumber('TKT-84910');
-      setCustomerTier('Enterprise Tier 1 ($240k ARR)');
-      setInquiryText('Our automated end-of-month settlement webhook is failing with 429 Too Many Requests. We need urgent burst quota adjustment.');
+      setCustomerTier('Enterprise Tier 1 (₹2.4 Cr ARR)');
+      setInquiryText('Our automated Mumbai gateway settlement webhook is failing with 504 Gateway Timeout. We request immediate credit adjustment.');
     } else if (type === 'quantum') {
-      setCustomerName('Quantum Health Systems');
+      setCustomerName('Tata Consultancy Services');
       setTicketNumber('TKT-99214');
-      setCustomerTier('Healthcare SLA Gold');
-      setInquiryText('HL7 FHIR batch ingestion pipeline is returning 504 Gateway Timeout during nocturnal backup synchronization.');
+      setCustomerTier('Enterprise SLA Platinum');
+      setInquiryText('Banking batch ingestion pipeline is returning 504 Gateway Timeout during nocturnal reconciliation.');
     } else {
-      setCustomerName('FinEdge Capital Partners');
+      setCustomerName('HDFC Securities Tech');
       setTicketNumber('TKT-77310');
-      setCustomerTier('Pro Subscription');
-      setInquiryText('How do we configure IP whitelisting for OAuth callback redirect endpoints?');
+      setCustomerTier('Pro Gold Subscription');
+      setInquiryText('How do we configure IP whitelisting for SEBI-compliant OAuth callback redirect endpoints?');
     }
   };
 
@@ -193,7 +193,7 @@ export const ClientDashboard: React.FC<ClientDashboardProps> = ({ onNavigate }) 
                       wf.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' :
                       'bg-pink-100 text-pink-800 border-pink-200 animate-pulse'
                     }`}>
-                      {(wf.status || 'PENDING').replace(/_/g, ' ')}
+                      {String(wf.status || 'PENDING').replace(/_/g, ' ')}
                     </span>
                     <span className="text-[11px] text-pink-700 font-bold">
                       {wf.metadata?.customerName || 'Customer'}

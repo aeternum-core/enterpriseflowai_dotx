@@ -46,6 +46,8 @@ def get_observability_metrics():
             "total_prompt_tokens": 14280,
             "total_completion_tokens": 3950,
             "estimated_cost_usd": 0.048,
+            "estimated_cost_inr": 4.12,
+            "currency": "INR",
             "provider": "Gemini 2.5 Flash / Deterministic Fallback"
         },
         "chaos_telemetry": {

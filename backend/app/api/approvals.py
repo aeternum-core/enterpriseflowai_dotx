@@ -62,7 +62,7 @@ def get_approval_metrics(db: Session = Depends(get_db)):
         "approved_this_month": len(approved) + 8, # include baseline historical executions
         "due_soon_count": due_soon_count,
         "total_financial_value": total_financial_value,
-        "currency": "USD"
+        "currency": "INR"
     }
 
 @router.get("")

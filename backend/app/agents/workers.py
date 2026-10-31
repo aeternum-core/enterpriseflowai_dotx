@@ -31,19 +31,20 @@ class DocumentAndDataWorker:
 
         if action == "EXTRACT_DOCUMENTS":
             raw_text = params.get("raw_input", "")
-            amount = params.get("amount") or 18450.00
-            vendor = params.get("vendor_name") or ("Datadog Monitoring Inc." if "datadog" in raw_text.lower() else "Snowflake Cloud Analytics")
+            amount = params.get("amount") or 2480000.00
+            vendor = params.get("vendor_name") or ("Tata Communications Ltd" if "tata" in raw_text.lower() else "Infosys Cloud Infrastructure")
             output = {
                 "document_type": "PDF/A-3",
                 "extracted_vendor": vendor,
                 "invoice_number": params.get("invoice_number", f"INV-2026-{uuid.uuid4().hex[:4].upper()}"),
                 "amount": float(amount),
-                "currency": "USD",
+                "currency": "INR",
                 "line_items": [
-                    {"item": "Infrastructure Monitoring Tier-4", "amount": float(amount) * 0.8},
-                    {"item": "Enterprise Support SLA", "amount": float(amount) * 0.2}
+                    {"item": "Enterprise Cloud Transit Tier-4", "amount": float(amount) * 0.8},
+                    {"item": "24/7 Mission Critical Support SLA", "amount": float(amount) * 0.2}
                 ],
                 "tax_verified": True,
+                "gstin_verified": True,
                 "status": "DOCUMENTS_EXTRACTED"
             }
 

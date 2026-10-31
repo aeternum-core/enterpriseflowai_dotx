@@ -224,20 +224,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-mono font-bold text-slate-400">{wf.id}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getWorkflowBadge(wf.status)}`}>
-                      {(wf.status || 'PENDING').replace(/_/g, ' ')}
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getWorkflowBadge(wf.status || '')}`}>
+                      {String(wf.status || 'PENDING').replace(/_/g, ' ')}
                     </span>
                     <span className="text-[10px] text-slate-400 font-medium">
-                      By {wf.submittedByName || 'Platform User'} ({wf.submittedByRole?.replace('_', ' ') || 'STAFF'})
+                      By {wf.submittedByName || 'Enterprise Platform'} ({String(wf.submittedByRole || 'STAFF').replace(/_/g, ' ')})
                     </span>
                   </div>
                   <h3 className="text-sm font-bold text-slate-800 leading-tight">
-                    {wf.title}
+                    {wf.title || 'Enterprise Workflow Execution'}
                   </h3>
                   <div className="text-xs text-slate-500 flex items-center gap-3">
                     <span>Current Stage: <strong className="text-slate-700">{wf.currentAgentName || 'Central Planner'}</strong></span>
                     <span>•</span>
-                    <span>Tasks: {wf.tasks ? wf.tasks.filter(t => t.status === 'COMPLETED').length : 0}/{wf.tasks ? wf.tasks.length : 0}</span>
+                    <span>Tasks: {Array.isArray(wf.tasks) ? wf.tasks.filter(t => t.status === 'COMPLETED').length : 0}/{Array.isArray(wf.tasks) ? wf.tasks.length : 0}</span>
                   </div>
                 </div>
 
@@ -245,12 +245,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                 <div className="flex items-center gap-4 sm:shrink-0">
                   <div className="w-28 text-right">
                     <div className="text-xs font-bold text-slate-700 mb-1">
-                      {wf.progress ?? (wf.tasks && wf.tasks.length > 0 ? Math.round((wf.tasks.filter(t => t.status === 'COMPLETED').length / wf.tasks.length) * 100) : 0)}%
+                      {wf.progress ?? (Array.isArray(wf.tasks) && wf.tasks.length > 0 ? Math.round((wf.tasks.filter(t => t.status === 'COMPLETED').length / wf.tasks.length) * 100) : 0)}%
                     </div>
                     <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                       <div
                         className="bg-blue-600 h-full rounded-full transition-all duration-500"
-                        style={{ width: `${wf.progress ?? (wf.tasks && wf.tasks.length > 0 ? Math.round((wf.tasks.filter(t => t.status === 'COMPLETED').length / wf.tasks.length) * 100) : 0)}%` }}
+                        style={{ width: `${wf.progress ?? (Array.isArray(wf.tasks) && wf.tasks.length > 0 ? Math.round((wf.tasks.filter(t => t.status === 'COMPLETED').length / wf.tasks.length) * 100) : 0)}%` }}
                       />
                     </div>
                   </div>
@@ -290,14 +290,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
                     className="p-3.5 rounded-xl border border-amber-200 bg-amber-50/50 hover:bg-amber-50 cursor-pointer transition"
                   >
                     <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-amber-800 mb-1">
-                      <span>Risk: {appr.riskLevel}</span>
-                      <span>Requires: {appr.approverRoleRequired.replace('_', ' ')}</span>
+                      <span>Risk: {appr.riskLevel || 'STANDARD'}</span>
+                      <span>Requires: {String(appr.approverRoleRequired || (appr as any).required_role || 'APPROVER').replace(/_/g, ' ')}</span>
                     </div>
                     <h4 className="text-xs font-bold text-slate-900 leading-snug">
-                      {appr.actionRequested}
+                      {appr.actionRequested || (appr as any).action_type || 'Authorization Request'}
                     </h4>
                     <p className="text-[11px] text-slate-600 mt-1 line-clamp-2">
-                      Requested by {appr.requestedByAgent}
+                      Requested by {appr.requestedByAgent || (appr as any).requested_by_agent || 'EnterpriseFlow Engine'}
                     </p>
                     <div className="mt-2 text-right">
                       <span className="text-[10px] text-blue-700 font-bold hover:underline">

@@ -78,7 +78,7 @@ export const WorkflowsPage: React.FC<WorkflowsPageProps> = ({
       finalTitle = title || `Employee Onboarding - ${candidateName} (Senior Engineer)`;
       metadata = { candidateName, roleTitle: 'Senior Infrastructure Engineer', department: 'Cloud Infra' };
     } else if (workflowType === 'INVOICE_PROCESSING') {
-      finalTitle = title || `Invoice Processing - ${vendorName} ($${Number(amount).toLocaleString()})`;
+      finalTitle = title || `Invoice Processing - ${vendorName} (₹${Number(amount).toLocaleString('en-IN')})`;
       metadata = { vendorName, amount: Number(amount), invoiceNumber: `INV-${Date.now().toString().slice(-5)}`, poNumber: 'PO-88421' };
     } else if (workflowType === 'CUSTOMER_REQUEST_RESOLUTION') {
       finalTitle = title || `Customer Resolution - ${customerName}`;
@@ -237,7 +237,7 @@ export const WorkflowsPage: React.FC<WorkflowsPageProps> = ({
                           wf.status === 'FAILED' ? 'bg-rose-100 text-rose-800 border-rose-200' :
                           'bg-blue-100 text-blue-800 border-blue-200 animate-pulse'
                         }`}>
-                          {(wf.status || 'PENDING').replace(/_/g, ' ')}
+                          {String(wf.status || 'PENDING').replace(/_/g, ' ')}
                         </span>
                         <span className="text-[11px] text-slate-400">
                           Priority: <strong>{wf.priority}</strong>
@@ -343,7 +343,7 @@ export const WorkflowsPage: React.FC<WorkflowsPageProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-slate-700 mb-1">Invoice Total ($ USD)</label>
+                      <label className="block font-semibold text-slate-700 mb-1">Invoice Total (₹ INR)</label>
                       <input
                         type="number"
                         required
@@ -395,7 +395,7 @@ export const WorkflowsPage: React.FC<WorkflowsPageProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-slate-700 mb-1">Authorized Budget ($)</label>
+                      <label className="block font-semibold text-slate-700 mb-1">Authorized Budget (₹ INR)</label>
                       <input
                         type="number"
                         required

@@ -218,7 +218,7 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({ onNavigateWorkflow }) 
                     task.status === 'WAITING_APPROVAL' ? 'bg-amber-100 text-amber-800 font-bold' :
                     'bg-slate-200 text-slate-600'
                   }`}>
-                    {(task.status || 'PENDING').replace(/_/g, ' ')}
+                    {String(task.status || 'PENDING').replace(/_/g, ' ')}
                   </span>
                 </div>
                 <div className="text-slate-500 text-[11px]">{task.description}</div>

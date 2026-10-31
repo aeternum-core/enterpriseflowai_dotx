@@ -124,19 +124,19 @@ async def trigger_demo_scenario(payload: TriggerScenarioRequest, db: Session = D
     sc_id = payload.scenarioId
 
     if sc_id == "onboarding_executive":
-        prompt = "Onboard executive hire Michael Chang as VP of Engineering in Global Engineering with sensitive AWS Production Root Access."
+        prompt = "Onboard executive hire Rajesh Sharma as Vice President of Engineering in Enterprise Systems with privileged Production Root Access."
         req_id = "user_elena_vance"
     elif sc_id == "large_invoice_approval":
-        prompt = "Process high-value invoice INV-2026-4912 from Equinix Global Fiber Network for $48,200.00 datacenter transit with PO-77192-DATA."
+        prompt = "Process high-value invoice INV-2026-4912 from Tata Communications Ltd for ₹24,80,000.00 datacenter connectivity with PO-77192-DATA."
         req_id = "user_sarah_lin"
     elif sc_id == "sev1_cloud_incident":
-        prompt = "Resolve Sev-1 Primary CloudSQL Database Lock Contention Outage INC-2026-9901 with privileged ClusterAdmin elevation."
+        prompt = "Resolve Sev-1 Primary CloudSQL Database Lock Contention Outage INC-2026-9901 in Mumbai DC with privileged ClusterAdmin elevation."
         req_id = "user_alex_rivera"
     elif sc_id in ("customer_sla_escalation", "customer_sla_refund", "customer", "customer_resolution"):
-        prompt = "Resolve customer escalation for Quantum Health Systems with webhook 504 gateway timeout and approve exception credit refund of $1,250.00."
+        prompt = "Resolve customer escalation for Reliance Digital Systems with webhook 504 gateway timeout and approve exception credit refund of ₹45,000.00."
         req_id = "user_marcus_brody"
     elif sc_id in ("server_cluster_procurement", "procurement_hardware_cluster"):
-        prompt = "Onboard enterprise hardware vendor Quantum Photonics Corp and disburse deposit payment of $78,500.00 for optical switch components with bank jurisdiction KY Cayman Islands."
+        prompt = "Onboard enterprise hardware vendor Wipro Technologies Ltd and disburse deposit payment of ₹78,50,000.00 for AI GPU cluster components with domestic HDFC Bank RTGS."
         req_id = "user_marcus_brody"
     else:
         prompt = f"Run standard enterprise workflow scenario {sc_id}."

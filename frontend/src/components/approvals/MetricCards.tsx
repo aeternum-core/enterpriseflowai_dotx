@@ -44,7 +44,7 @@ export const MetricCards: React.FC<MetricCardsProps> = ({ metrics, loading }) =>
       title: 'Total Pending Financial Value',
       value: loading || !metrics
         ? '...'
-        : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(metrics.total_financial_value),
+        : new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(metrics.total_financial_value),
       subtext: 'Treasury & procurement commitment',
       icon: DollarSign,
       color: 'text-blue-600',

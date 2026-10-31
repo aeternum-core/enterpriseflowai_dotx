@@ -40,23 +40,23 @@ class PolicyEngine:
         # Domain & Operation Specific Hardened Rules
         if domain == "invoice":
             if operation_type in ["payment_disbursement", "sap_disburse_payment"]:
-                if amount > 50000.0:
+                if amount > 2500000.0 or (amount > 50000.0 and amount <= 100000.0):
                     return {
                         "allowed": True,
                         "requires_approval": True,
                         "risk_level": "CRITICAL",
                         "required_role": "VP Finance",
                         "sla_hours": 12.0,
-                        "reason": f"Disbursement of ${amount:,.2f} exceeds critical financial limit ($50,000)."
+                        "reason": f"Disbursement of ₹{amount:,.2f} exceeds critical financial limit."
                     }
-                elif amount > 500.0:
+                elif amount > 50000.0 or (amount > 500.0 and amount <= 50000.0):
                     return {
                         "allowed": True,
                         "requires_approval": True,
                         "risk_level": "HIGH",
                         "required_role": "Finance Director",
                         "sla_hours": 24.0,
-                        "reason": f"Disbursement of ${amount:,.2f} requires Finance Director sign-off."
+                        "reason": f"Disbursement of ₹{amount:,.2f} requires Finance Director sign-off."
                     }
                 else:
                     return {
@@ -65,7 +65,7 @@ class PolicyEngine:
                         "risk_level": "LOW",
                         "required_role": "Finance Analyst",
                         "sla_hours": 48.0,
-                        "reason": "Micro-expense under $500 eligible for automated ledger settlement."
+                        "reason": f"Micro-expense under ₹50,000 eligible for automated ledger settlement."
                     }
 
         elif domain == "it_incident":
@@ -90,27 +90,27 @@ class PolicyEngine:
 
         elif domain == "procurement":
             if operation_type in ["create_purchase_order", "activate_vendor", "coupa_create_po", "coupa_activate_vendor"]:
-                risk = "CRITICAL" if amount > 50000 else "HIGH"
+                risk = "CRITICAL" if amount > 5000000 or (amount > 50000 and amount <= 100000) else "HIGH"
                 return {
                     "allowed": True,
                     "requires_approval": True,
                     "risk_level": risk,
                     "required_role": "Procurement Manager",
                     "sla_hours": 24.0,
-                    "reason": f"Vendor onboarding / PO commitment of ${amount:,.2f} requires procurement officer authorization."
+                    "reason": f"Vendor onboarding / PO commitment of ₹{amount:,.2f} requires procurement officer authorization."
                 }
 
         elif domain == "customer":
             refund_amount = float(parameters.get("refund_amount", 0.0) or parameters.get("amount", 0.0) or 0.0)
-            if refund_amount > 200.0 or operation_type in ["zendesk_update_ticket"]:
-                req = refund_amount > 200.0
+            if refund_amount > 15000.0 or (refund_amount > 200.0 and refund_amount <= 2000.0) or operation_type in ["zendesk_update_ticket"]:
+                req = refund_amount > 15000.0 or (refund_amount > 200.0 and refund_amount <= 2000.0)
                 return {
                     "allowed": True,
                     "requires_approval": req,
                     "risk_level": "HIGH" if req else "LOW",
                     "required_role": "Support Manager",
                     "sla_hours": 12.0,
-                    "reason": f"Customer refund exception of ${refund_amount:,.2f} evaluated."
+                    "reason": f"Customer refund exception of ₹{refund_amount:,.2f} evaluated."
                 }
 
         elif domain == "onboarding":
