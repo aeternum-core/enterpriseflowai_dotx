@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { RealEmailModal } from '../components/onboarding/RealEmailModal';
+import { formatIndia12HourTime } from '../utils/timeUtils';
 
 interface EmployeeOnboardingPageProps {
   onNavigate: (path: string) => void;
@@ -897,7 +898,7 @@ export const EmployeeOnboardingPage: React.FC<EmployeeOnboardingPageProps> = ({ 
                     >
                       <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
                         <span className="font-bold text-blue-700 font-mono">{msg.to}</span>
-                        <span>{new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span>{formatIndia12HourTime(msg.sentAt, false)}</span>
                       </div>
                       <h4 className="font-bold text-slate-900 leading-snug line-clamp-1">{msg.subject}</h4>
                       <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">{msg.summary}</p>

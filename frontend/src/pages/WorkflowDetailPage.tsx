@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatIndia12HourTime, formatIndiaDateTime } from '../utils/timeUtils';
 import { Workflow, WorkflowTask, AgentMessage, ApprovalRequest } from '../types';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -241,11 +242,11 @@ export const WorkflowDetailPage: React.FC<WorkflowDetailPageProps> = ({
           <div>•</div>
           <div>Department: <strong className="text-slate-800">{String(workflow.submittedByRole || 'Operations').replace(/_/g, ' ')}</strong></div>
           <div>•</div>
-          <div>Created: <strong className="text-slate-800">{workflow.createdAt ? new Date(workflow.createdAt).toLocaleTimeString() : 'Recent'}</strong></div>
+          <div>Created: <strong className="text-slate-800">{workflow.createdAt ? formatIndia12HourTime(workflow.createdAt) : 'Recent'}</strong></div>
           {workflow.completedAt && (
             <>
               <div>•</div>
-              <div>Completed: <strong className="text-emerald-700">{new Date(workflow.completedAt).toLocaleTimeString()}</strong></div>
+              <div>Completed: <strong className="text-emerald-700">{formatIndia12HourTime(workflow.completedAt)}</strong></div>
             </>
           )}
         </div>
@@ -404,7 +405,7 @@ export const WorkflowDetailPage: React.FC<WorkflowDetailPageProps> = ({
                     <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-200">
                       <span>Task ID: {task.id}</span>
                       <span>Dependencies: {((task.dependencies || (task as any).dependsOn || []) as string[]).length > 0 ? ((task.dependencies || (task as any).dependsOn || []) as string[]).join(', ') : 'Root task'}</span>
-                      {task.completedAt && <span>Completed at: {new Date(task.completedAt).toLocaleTimeString()}</span>}
+                      {task.completedAt && <span>Completed at: {formatIndia12HourTime(task.completedAt)}</span>}
                     </div>
 
                   </div>
@@ -438,7 +439,7 @@ export const WorkflowDetailPage: React.FC<WorkflowDetailPageProps> = ({
                       </span>
                     </div>
                     <span className="text-[10px] text-slate-400 font-mono">
-                      {new Date(msg.timestamp).toLocaleTimeString()}
+                      {formatIndia12HourTime(msg.timestamp)}
                     </span>
                   </div>
                   <p className="text-slate-700 pl-2 border-l-2 border-blue-400 font-medium">

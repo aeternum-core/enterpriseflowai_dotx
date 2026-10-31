@@ -19,6 +19,7 @@ import {
   Server,
   Flame
 } from 'lucide-react';
+import { formatIndia12HourTime } from '../utils/timeUtils';
 
 interface ITIncidentAccessPageProps {
   onNavigate: (path: string) => void;
@@ -447,7 +448,7 @@ export const ITIncidentAccessPage: React.FC<ITIncidentAccessPageProps> = ({ onNa
                   </div>
                   {s.revokedAt && (
                     <div className="p-2 bg-rose-950/40 border border-rose-800/40 rounded-lg text-[11px] text-rose-300">
-                      <strong>Revoked:</strong> {new Date(s.revokedAt).toLocaleTimeString()} &bull; {s.revocationReason || 'Revoked by admin'}
+                      <strong>Revoked:</strong> {formatIndia12HourTime(s.revokedAt)} &bull; {s.revocationReason || 'Revoked by admin'}
                     </div>
                   )}
                 </div>

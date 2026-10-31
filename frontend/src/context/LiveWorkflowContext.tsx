@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Notification } from '../types';
+import { formatIndia12HourTime } from '../utils/timeUtils';
 
 interface LiveEventMessage {
   event: string;
@@ -64,7 +65,7 @@ export const LiveWorkflowProvider: React.FC<{ children: React.ReactNode }> = ({ 
         const eventItem: LiveEventMessage = {
           event: data.event,
           payload: data.payload,
-          timestamp: new Date().toLocaleTimeString()
+          timestamp: formatIndia12HourTime(new Date())
         };
 
         setRecentEvents(prev => [eventItem, ...prev].slice(0, 50));

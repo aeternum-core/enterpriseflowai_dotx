@@ -33,6 +33,8 @@ import {
   Settings,
   Wrench
 } from 'lucide-react';
+import { LiveIndiaClock } from '../common/LiveIndiaClock';
+import { formatIndia12HourTime } from '../../utils/timeUtils';
 
 interface EnterpriseLayoutProps {
   currentPath: string;
@@ -270,6 +272,9 @@ export const EnterpriseLayout: React.FC<EnterpriseLayoutProps> = ({
         {/* Right: Actions, Notifications, User Menu */}
         <div className="flex items-center gap-3">
           
+          {/* Live India Standard Time (12-Hour Format) */}
+          <LiveIndiaClock />
+
           {/* Quick Approvals Button */}
           <button
             onClick={() => onNavigate('/approvals')}
@@ -318,7 +323,7 @@ export const EnterpriseLayout: React.FC<EnterpriseLayoutProps> = ({
                       >
                         <div className="flex items-center justify-between font-semibold text-slate-800">
                           <span>{n.title}</span>
-                          <span className="text-[10px] text-slate-400">{new Date(n.createdAt).toLocaleTimeString()}</span>
+                          <span className="text-[10px] text-slate-400">{formatIndia12HourTime(n.createdAt)}</span>
                         </div>
                         <p className="text-slate-600 mt-0.5 leading-snug">{n.message}</p>
                       </div>
