@@ -113,6 +113,19 @@ class RemediateIncidentRequest(BaseModel):
     serviceAction: str = "Restart container pod and cycle connection pool"
     serviceNowTicket: Optional[str] = None
 
+class RevokePamRequest(BaseModel):
+    sessionId: str
+    revocationReason: Optional[str] = "Task completed early; JIT elevation revoked by security administrator"
+
+class InjectIncidentRequest(BaseModel):
+    title: Optional[str] = "Sev-1 Ingress Controller TLS Certificate Expiry / Denial Alert"
+    targetSystem: Optional[str] = "Ingress Controller (k8s-prod-in-west-1)"
+    region: Optional[str] = "ap-south-1 (Mumbai DC)"
+    severity: Optional[str] = "SEV_1_CRITICAL"
+    anomaly: Optional[str] = "TLS termination handshake failures exceeding 42% threshold on payment routes"
+    blastRadius: Optional[str] = "Customer Authentication & Payment Gateway"
+    remediationAction: Optional[str] = "Rotate TLS Wildcard Certificate via Let's Encrypt / Cert-Manager and restart ingress pods"
+
 @router.get("/incidents")
 def list_incidents():
     return {
@@ -130,7 +143,7 @@ def list_pam_sessions():
 @router.get("/metrics")
 def get_it_incident_metrics():
     active_incidents = sum(1 for i in it_incidents if i["status"] != "RESOLVED")
-    active_pam = len(pam_sessions)
+    active_pam = sum(1 for s in pam_sessions if s.get("status") == "ACTIVE_ELEVATED")
     certin_filed = sum(1 for i in it_incidents if i.get("certInReportStatus") in ("REPORTED_TO_CERT_IN", "DISCLOSURE_CLOSED"))
 
     return {
@@ -267,4 +280,77 @@ async def remediate_incident(payload: RemediateIncidentRequest, db: Session = De
         "success": True,
         "message": f"ServiceNow automated remediation executed successfully for {payload.incidentId}.",
         "incident": inc
+    }
+
+@router.post("/revoke-pam")
+async def revoke_pam_privilege(payload: RevokePamRequest, db: Session = Depends(get_db)):
+    sess = next((s for s in pam_sessions if s["sessionId"] == payload.sessionId), None)
+    if not sess:
+        raise HTTPException(status_code=404, detail="PAM session not found")
+
+    sess["status"] = "REVOKED"
+    sess["revokedAt"] = datetime.utcnow().isoformat()
+    sess["revocationReason"] = payload.revocationReason
+
+    try:
+        tool_gateway.invoke(
+            db=db,
+            tool_key="okta_grant_privileged_access",
+            agent_id="iam_access_agent",
+            agent_name="Identity & Access Governance Agent",
+            workflow_id=f"wf_revoke_{sess['sessionId']}",
+            task_id=f"task_revoke_{sess['sessionId']}",
+            payload={
+                "action": "REVOKE_PRIVILEGE",
+                "sessionId": sess["sessionId"],
+                "reason": payload.revocationReason,
+                "domain": "it_incident"
+            }
+        )
+    except Exception:
+        pass
+
+    await broadcast_event("pam_session_revoked", sess)
+
+    return {
+        "success": True,
+        "message": f"Privileged access for {sess['sessionId']} immediately revoked.",
+        "session": sess
+    }
+
+@router.post("/inject-drill")
+async def inject_incident_drill(payload: InjectIncidentRequest, db: Session = Depends(get_db)):
+    new_id = f"INC-2026-{uuid.uuid4().hex[:4].upper()}"
+    now = datetime.utcnow()
+    deadline = now + timedelta(hours=6)
+
+    incident = {
+        "id": new_id,
+        "title": payload.title or "Sev-1 Production Cluster Anomaly",
+        "targetSystem": payload.targetSystem or "k8s-prod-in-west-1 (Mumbai DC)",
+        "region": payload.region or "ap-south-1 (Mumbai DC)",
+        "severity": payload.severity or "SEV_1_CRITICAL",
+        "status": "WAITING_APPROVAL",
+        "anomaly": payload.anomaly or "Anomaly detected in live container metrics",
+        "blastRadius": payload.blastRadius or "Core Production Services",
+        "detectedAt": now.isoformat(),
+        "certInMandatedDeadline": deadline.isoformat(),
+        "certInReportStatus": "DISCLOSURE_DRAFTED",
+        "certInTicket": f"CERTIN-2026-MUM-{uuid.uuid4().hex[:4].upper()}",
+        "logRetentionDays": 180,
+        "ntpSyncStatus": "NIC_NPL_ATOMIC_ALIGNED",
+        "approvalRequired": True,
+        "requiredRole": "IT Security Admin",
+        "remediationAction": payload.remediationAction or "Automated container pod restart in ServiceNow",
+        "workflowId": "wf_it_k8s_02"
+    }
+
+    it_incidents.insert(0, incident)
+
+    await broadcast_event("incident_created", incident)
+
+    return {
+        "success": True,
+        "message": f"Real-time Incident Drill {new_id} injected. CERT-In 6-Hour reporting timer started.",
+        "incident": incident
     }

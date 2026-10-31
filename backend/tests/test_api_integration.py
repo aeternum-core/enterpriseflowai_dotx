@@ -184,3 +184,56 @@ def test_invoice_processing_endpoints(client):
     assert r_up.status_code == 200
     assert r_up.json()["success"] is True
     assert "workflowId" in r_up.json()
+
+
+def test_it_incident_and_pam_governance(client):
+    """Verify IT Incident, CERT-In 6-hour disclosure, and JIT PAM elevation lifecycle"""
+    # 1. Incidents & metrics
+    r_inc = client.get("/api/it-incident/incidents")
+    assert r_inc.status_code == 200
+    assert r_inc.json()["total"] >= 3
+
+    r_met = client.get("/api/it-incident/metrics")
+    assert r_met.status_code == 200
+    assert "6 Hours" in r_met.json()["mandatoryReportingWindow"]
+    assert "180 Days" in r_met.json()["mandatoryLogRetention"]
+
+    # 2. Inject Sev-1 drill
+    r_drill = client.post("/api/it-incident/inject-drill", json={
+        "title": "Sev-1 API Gateway Outage Drill",
+        "targetSystem": "Gateway Envoy Proxy (ingress-mumbai-03)",
+        "region": "ap-south-1 (Mumbai DC)",
+        "severity": "SEV_1_CRITICAL",
+        "anomaly": "504 Gateway Timeout rate spike to 38%",
+        "blastRadius": "Payment Gateway Ingress Subnet"
+    })
+    assert r_drill.status_code == 200
+    new_inc_id = r_drill.json()["incident"]["id"]
+
+    # 3. File CERT-In disclosure
+    r_certin = client.post("/api/it-incident/report-certin", json={
+        "incidentId": new_inc_id,
+        "incidentSummary": "Simulated Sev-1 breach test under Section 70B(6) IT Act 2000"
+    })
+    assert r_certin.status_code == 200
+    assert r_certin.json()["success"] is True
+    assert "CERTIN-2026-MUM-" in r_certin.json()["certInTicket"]
+
+    # 4. JIT PAM elevation & revocation lifecycle
+    r_elevate = client.post("/api/it-incident/elevate-pam", json={
+        "userEmail": "alex.rivera@enterpriseflow.corp",
+        "targetCluster": "k8s-prod-in-west-1 (Mumbai DC)",
+        "durationHours": 2,
+        "justification": "Emergency hotfix for incident drill",
+        "mfaToken": "FIDO2_YUBIKEY_VERIFIED"
+    })
+    assert r_elevate.status_code == 200
+    sess_id = r_elevate.json()["session"]["sessionId"]
+    assert r_elevate.json()["session"]["status"] == "ACTIVE_ELEVATED"
+
+    r_revoke = client.post("/api/it-incident/revoke-pam", json={
+        "sessionId": sess_id,
+        "revocationReason": "Hotfix verified and deployed; terminating elevated token early"
+    })
+    assert r_revoke.status_code == 200
+    assert r_revoke.json()["session"]["status"] == "REVOKED"

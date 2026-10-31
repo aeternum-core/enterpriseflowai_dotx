@@ -16,7 +16,8 @@ import {
   ArrowRight,
   ExternalLink,
   Zap,
-  Server
+  Server,
+  Flame
 } from 'lucide-react';
 
 interface ITIncidentAccessPageProps {
@@ -142,6 +143,50 @@ export const ITIncidentAccessPage: React.FC<ITIncidentAccessPageProps> = ({ onNa
     }
   };
 
+  const handleRevokePam = async (sessionId: string) => {
+    try {
+      const res = await fetch('/api/it-incident/revoke-pam', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          revocationReason: 'Manually revoked by security administrator via EnterpriseFlow console'
+        })
+      });
+      if (res.ok) {
+        await fetchData();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleInjectDrill = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch('/api/it-incident/inject-drill', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: 'Sev-1 Gateway Ingress TLS Termination Handshake Spike (Mumbai DC)',
+          targetSystem: 'Ingress Controller Gateway (ingress-prod-02)',
+          region: 'ap-south-1 (Mumbai DC)',
+          severity: 'SEV_1_CRITICAL',
+          anomaly: 'Handshake timeout rate breached 45% threshold affecting core banking UPI callbacks',
+          blastRadius: 'Payment Gateway Ingress Subnet',
+          remediationAction: 'Auto-cycled envoy proxies and renewed Let\'s Encrypt certificate vault in ServiceNow'
+        })
+      });
+      if (res.ok) {
+        await fetchData();
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6 font-sans">
       
@@ -167,7 +212,15 @@ export const ITIncidentAccessPage: React.FC<ITIncidentAccessPageProps> = ({ onNa
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={handleInjectDrill}
+            disabled={isLoading}
+            className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-md shadow-rose-600/20 flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
+          >
+            <Flame className="w-4 h-4 text-amber-300" />
+            <span>Inject Sev-1 Drill</span>
+          </button>
           <button
             onClick={() => setShowPamModal(true)}
             className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/20 flex items-center gap-1.5 transition cursor-pointer"
@@ -177,7 +230,7 @@ export const ITIncidentAccessPage: React.FC<ITIncidentAccessPageProps> = ({ onNa
           </button>
           <button
             onClick={fetchData}
-            className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600"
+            className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 cursor-pointer"
             title="Refresh"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -348,9 +401,25 @@ export const ITIncidentAccessPage: React.FC<ITIncidentAccessPageProps> = ({ onNa
                     <KeyRound className="w-4 h-4 text-cyan-400" />
                     <span className="font-mono text-xs font-bold text-cyan-300">{s.sessionId}</span>
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                    {s.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                      s.status === 'ACTIVE_ELEVATED'
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                        : 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                    }`}>
+                      {s.status}
+                    </span>
+                    {s.status === 'ACTIVE_ELEVATED' && (
+                      <button
+                        onClick={() => handleRevokePam(s.sessionId)}
+                        className="px-2.5 py-1 bg-rose-600/80 hover:bg-rose-600 text-white rounded-lg text-[10px] font-bold transition flex items-center gap-1 cursor-pointer"
+                        title="Immediately revoke JIT PAM token"
+                      >
+                        <Lock className="w-3 h-3" />
+                        <span>Revoke</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-1.5 text-xs text-slate-300">
@@ -372,13 +441,22 @@ export const ITIncidentAccessPage: React.FC<ITIncidentAccessPageProps> = ({ onNa
                   </div>
                   <div className="flex justify-between">
                     <span>Immutable Audit Vault:</span>
-                    <strong className="font-mono text-[10px] text-slate-400">{s.immutableLogVault}</strong>
+                    <strong className="font-mono text-[10px] text-slate-400 truncate max-w-[220px]" title={s.immutableLogVault}>
+                      {s.immutableLogVault}
+                    </strong>
                   </div>
+                  {s.revokedAt && (
+                    <div className="p-2 bg-rose-950/40 border border-rose-800/40 rounded-lg text-[11px] text-rose-300">
+                      <strong>Revoked:</strong> {new Date(s.revokedAt).toLocaleTimeString()} &bull; {s.revocationReason || 'Revoked by admin'}
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-2.5 bg-slate-800/60 rounded-xl text-[10px] text-slate-400 flex items-center justify-between">
                   <span>Session Keystrokes Monitored</span>
-                  <span className="text-emerald-400 font-bold">&bull; Live Recording Active</span>
+                  <span className={`font-bold ${s.status === 'ACTIVE_ELEVATED' ? 'text-emerald-400' : 'text-slate-500'}`}>
+                    &bull; {s.status === 'ACTIVE_ELEVATED' ? 'Live Recording Active' : 'Recording Sealed & Vaulted'}
+                  </span>
                 </div>
               </div>
             ))}
