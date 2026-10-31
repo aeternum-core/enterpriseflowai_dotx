@@ -295,10 +295,10 @@ class CustomerClassificationAgent(BaseSpecializedAgent):
 
     def execute(self, db: Session, context: Dict[str, Any], workflow_id: str, task_id: str) -> Dict[str, Any]:
         raw = context.get("raw_input", "").lower()
-        if "refund" in raw or "billing" in raw or "charge" in raw:
+        if "refund" in raw or "billing" in raw or "charge" in raw or "credit" in raw:
             cat = "BILLING_REFUND_DISPUTE"
             urgency = "HIGH"
-        elif "down" in raw or "outage" in raw or "urgent" in raw:
+        elif "down" in raw or "outage" in raw or "urgent" in raw or "504" in raw or "timeout" in raw:
             cat = "CRITICAL_OUTAGE"
             urgency = "URGENT"
         else:
@@ -308,9 +308,32 @@ class CustomerClassificationAgent(BaseSpecializedAgent):
         return {
             "category": cat,
             "urgency": urgency,
-            "sentiment": "NEGATIVE" if "unacceptable" in raw or "dispute" in raw else "NEUTRAL",
+            "sentiment": "NEGATIVE" if any(w in raw for w in ["unacceptable", "dispute", "timeout", "latency", "escalation"]) else "NEUTRAL",
             "customer_tier": "ENTERPRISE_GOLD",
+            "account_health_score": 82,
             "status": "CLASSIFICATION_COMPLETE"
+        }
+
+class CustomerKnowledgePolicyAgent(BaseSpecializedAgent):
+    def __init__(self):
+        super().__init__(
+            key="customer_kb_agent",
+            name="Knowledge & Policy Agent",
+            domain="customer",
+            description="Searches SLA knowledge base, customer contract entitlements, and past resolutions.",
+            system_instructions="Verify SLA bounds and historical credit adjustments.",
+            allowed_tools=[]
+        )
+
+    def execute(self, db: Session, context: Dict[str, Any], workflow_id: str, task_id: str) -> Dict[str, Any]:
+        return {
+            "sla_tier": "ENTERPRISE_PLATINUM_99_9",
+            "contract_limit": 5000.00,
+            "latency_sla_breached": True,
+            "entitled_credit_percentage": 10.0,
+            "knowledge_articles_matched": ["KB-SLA-9021", "KB-REFUND-RULES-V2"],
+            "prior_remedies_found": 3,
+            "status": "POLICY_VERIFIED"
         }
 
 class CustomerResolutionAgent(BaseSpecializedAgent):
@@ -344,8 +367,44 @@ class CustomerResolutionAgent(BaseSpecializedAgent):
         )
         return {
             "resolution": res,
-            "customer_response": f"Apologies for the billing mismatch. We have issued a credit adjustment of ${refund_amount:.2f} to your account.",
+            "customer_response": f"Apologies for the SLA latency variance. We have issued a credit adjustment of ${refund_amount:.2f} to your account.",
             "status": "CUSTOMER_RESOLVED"
+        }
+
+class CustomerIntegrationAgent(BaseSpecializedAgent):
+    def __init__(self):
+        super().__init__(
+            key="customer_integration_agent",
+            name="CRM Integration Agent",
+            domain="customer",
+            description="Executes CRM system updates and Zendesk macro resolutions.",
+            system_instructions="Commit resolution state to customer CRM and ticketing system.",
+            allowed_tools=["zendesk_update_ticket"]
+        )
+
+    def execute(self, db: Session, context: Dict[str, Any], workflow_id: str, task_id: str) -> Dict[str, Any]:
+        refund_amount = context.get("refund_amount", 450.00)
+        payload = {
+            "ticket_id": f"ZD-EU-{uuid.uuid4().hex[:5].upper()}",
+            "resolution_status": "SOLVED",
+            "refund_amount": refund_amount,
+            "customer_email": context.get("customer_email", "billing@globalcorp.eu"),
+            "domain": "customer"
+        }
+        res = tool_gateway.invoke(
+            db=db,
+            tool_key="zendesk_update_ticket",
+            agent_id=self.key,
+            agent_name=self.name,
+            workflow_id=workflow_id,
+            task_id=task_id,
+            payload=payload
+        )
+        return {
+            "crm_sync": "SUCCESS",
+            "ticket_status": "RESOLVED",
+            "zendesk_receipt": res,
+            "status": "CRM_UPDATED"
         }
 
 # --- WORKFLOW 04: Procurement & Vendor Onboarding Agents ---
@@ -568,7 +627,9 @@ class AgentRegistry:
             FinanceDisbursementAgent(),
             # Customer
             CustomerClassificationAgent(),
+            CustomerKnowledgePolicyAgent(),
             CustomerResolutionAgent(),
+            CustomerIntegrationAgent(),
             # Procurement
             ProcurementAnalysisAgent(),
             ProcurementExecutionAgent(),

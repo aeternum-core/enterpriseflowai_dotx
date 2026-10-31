@@ -167,11 +167,12 @@ function MainRouter() {
     }
 
     // 3. Operations Canvas (Revka-inspired with React Flow DAG & Inspector)
-    if (effectivePath === '/canvas') {
+    if (effectivePath.startsWith('/canvas')) {
       return (
         <div className="space-y-6">
           <OperationsCanvas
             workflow={latestWorkflow}
+            onNavigateWorkflow={(id) => navigate(`/workflows/${id}`)}
             onRefresh={async () => {
               if (latestWorkflow) {
                 const d = await api.getWorkflowDetail(latestWorkflow.id);

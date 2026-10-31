@@ -475,17 +475,72 @@ def seed_database(db: Session):
     db.add(wf_cust)
     db.commit()
 
+    task_cust_1 = WorkflowTask(
+        id="task_cust_intake_01",
+        workflow_id=wf_cust.id,
+        task_key="task_cust_classify",
+        agent_name="Request Classification Agent",
+        title="Intake Triage & Sentiment Analysis",
+        status="COMPLETED",
+        execution_order=1,
+        input_payload={"agent_key": "customer_classification_agent", "dependencies": []},
+        output_payload={"category": "BILLING_REFUND_DISPUTE", "urgency": "HIGH", "sentiment": "NEGATIVE", "customer_tier": "ENTERPRISE_GOLD"},
+        started_at=now - timedelta(hours=28),
+        completed_at=now - timedelta(hours=28) + timedelta(seconds=14)
+    )
+    db.add(task_cust_1)
+
+    task_cust_2 = WorkflowTask(
+        id="task_cust_kb_02",
+        workflow_id=wf_cust.id,
+        task_key="task_cust_kb",
+        agent_name="Knowledge & Policy Agent",
+        title="Retrieve Customer History & Match SLA Policy",
+        status="COMPLETED",
+        execution_order=2,
+        input_payload={"agent_key": "customer_kb_agent", "dependencies": ["task_cust_classify"]},
+        output_payload={"sla_tier": "ENTERPRISE_PLATINUM_99_9", "contract_limit": 5000.00, "latency_sla_breached": True, "entitled_credit_percentage": 10.0},
+        started_at=now - timedelta(hours=28) + timedelta(seconds=15),
+        completed_at=now - timedelta(hours=28) + timedelta(seconds=32)
+    )
+    db.add(task_cust_2)
+
     task_cust = WorkflowTask(
         id="task_cust_ref_04",
         workflow_id=wf_cust.id,
         task_key="task_cust_resolve",
         agent_name="Customer Resolution Agent",
-        title="Issue Resolution & Credit Adjustment ($450.00)",
+        title="Formulate Remedy & Credit Adjustment ($450.00)",
         status="WAITING_APPROVAL",
-        execution_order=2,
-        input_payload={"agent_key": "customer_resolution_agent", "requires_approval": True}
+        execution_order=3,
+        input_payload={"agent_key": "customer_resolution_agent", "requires_approval": True, "dependencies": ["task_cust_kb"]},
+        started_at=now - timedelta(hours=28) + timedelta(seconds=35)
     )
     db.add(task_cust)
+
+    task_cust_4 = WorkflowTask(
+        id="task_cust_exec_04",
+        workflow_id=wf_cust.id,
+        task_key="task_cust_execute",
+        agent_name="CRM Integration Agent",
+        title="Execute Zendesk Ticket Update & CRM Sync",
+        status="PENDING",
+        execution_order=4,
+        input_payload={"agent_key": "customer_integration_agent", "dependencies": ["task_cust_resolve"]}
+    )
+    db.add(task_cust_4)
+
+    task_cust_5 = WorkflowTask(
+        id="task_cust_notif_05",
+        workflow_id=wf_cust.id,
+        task_key="task_cust_notify",
+        agent_name="Communication Agent",
+        title="Deliver Resolution Email & CSAT Survey",
+        status="PENDING",
+        execution_order=5,
+        input_payload={"agent_key": "communication_agent", "dependencies": ["task_cust_execute"]}
+    )
+    db.add(task_cust_5)
     db.commit()
 
     appr4 = ApprovalRequest(

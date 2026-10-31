@@ -88,6 +88,7 @@ export interface WorkflowTask {
 export interface WorkflowDetail {
   id: string;
   title: string;
+  name?: string;
   domain: string;
   status: string;
   priority: string;
@@ -104,7 +105,13 @@ export interface WorkflowDetail {
     written_by_agent: string;
     created_at: string;
   }>;
+  approvals?: any[];
+  messages?: any[];
+  documents?: any[];
+  plannerNotes?: string[];
 }
+
+export type WorkflowItem = any;
 
 export interface AuditEvent {
   id: string;

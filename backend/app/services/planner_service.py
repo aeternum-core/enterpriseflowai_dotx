@@ -184,35 +184,55 @@ class CentralPlannerService:
             return [
                 {
                     "task_key": "task_cust_classify",
-                    "title": "Classify Inquiry & Sentiment Analysis",
+                    "title": "Intake Triage & Sentiment Analysis",
                     "agent_name": "Request Classification Agent",
                     "agent_key": "customer_classification_agent",
                     "execution_order": 1,
                     "depends_on": [],
                     "requires_approval": False,
-                    "description": "Identify category, urgency, and customer SLA profile."
+                    "description": "Identify category, urgency, customer tier, and SLA policy profile."
+                },
+                {
+                    "task_key": "task_cust_kb",
+                    "title": "Retrieve Customer History & Match SLA Policy",
+                    "agent_name": "Knowledge & Policy Agent",
+                    "agent_key": "customer_kb_agent",
+                    "execution_order": 2,
+                    "depends_on": ["task_cust_classify"],
+                    "requires_approval": False,
+                    "description": "Verify contract entitlements, latency breach SLA terms, and historical remedy logs."
                 },
                 {
                     "task_key": "task_cust_resolve",
-                    "title": f"Issue Resolution & Credit Adjustment (${ref_amt:,.2f})",
+                    "title": f"Formulate Remedy & Credit Adjustment (${ref_amt:,.2f})",
                     "agent_name": "Customer Resolution Agent",
                     "agent_key": "customer_resolution_agent",
-                    "execution_order": 2,
-                    "depends_on": ["task_cust_classify"],
+                    "execution_order": 3,
+                    "depends_on": ["task_cust_kb"],
                     "requires_approval": req_appr,
                     "risk_level": "HIGH" if req_appr else "LOW",
                     "required_role": "Support Manager",
-                    "description": "Execute Zendesk resolution macro and credit adjustment."
+                    "description": "Evaluate concession policy limit ($200 auto-limit); request supervisor authorization if exceeded."
+                },
+                {
+                    "task_key": "task_cust_execute",
+                    "title": "Execute Zendesk Ticket Update & CRM Sync",
+                    "agent_name": "CRM Integration Agent",
+                    "agent_key": "customer_integration_agent",
+                    "execution_order": 4,
+                    "depends_on": ["task_cust_resolve"],
+                    "requires_approval": False,
+                    "description": "Execute Zendesk Support macro, credit adjustment ledger, and CRM account sync."
                 },
                 {
                     "task_key": "task_cust_notify",
-                    "title": "Send Resolution Email to Customer",
+                    "title": "Deliver Resolution Email & CSAT Survey",
                     "agent_name": "Communication Agent",
                     "agent_key": "communication_agent",
-                    "execution_order": 3,
-                    "depends_on": ["task_cust_resolve"],
+                    "execution_order": 5,
+                    "depends_on": ["task_cust_execute"],
                     "requires_approval": False,
-                    "description": "Send formal explanation and account credit notification."
+                    "description": "Deliver formal explanation, credit memo invoice, and satisfaction survey link."
                 }
             ]
 

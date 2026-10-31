@@ -132,7 +132,7 @@ async def trigger_demo_scenario(payload: TriggerScenarioRequest, db: Session = D
     elif sc_id == "sev1_cloud_incident":
         prompt = "Resolve Sev-1 Primary CloudSQL Database Lock Contention Outage INC-2026-9901 with privileged ClusterAdmin elevation."
         req_id = "user_alex_rivera"
-    elif sc_id in ("customer_sla_escalation", "customer_sla_refund"):
+    elif sc_id in ("customer_sla_escalation", "customer_sla_refund", "customer", "customer_resolution"):
         prompt = "Resolve customer escalation for Quantum Health Systems with webhook 504 gateway timeout and approve exception credit refund of $1,250.00."
         req_id = "user_marcus_brody"
     elif sc_id in ("server_cluster_procurement", "procurement_hardware_cluster"):
