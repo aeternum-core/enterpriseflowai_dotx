@@ -92,6 +92,8 @@ class RecoveryEngine:
                 backoff_sec *= 2 # Exponential backoff
                 attempt += 1
 
+        raise RuntimeError(f"Task '{task.title}' execution failed to return a valid result after {max_attempts} attempts.")
+
     @classmethod
     def _record_attempt(
         cls,

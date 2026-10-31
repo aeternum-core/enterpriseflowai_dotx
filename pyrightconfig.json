@@ -1,0 +1,23 @@
+{
+  "include": [
+    "backend/app",
+    "backend/tests"
+  ],
+  "exclude": [
+    "frontend",
+    "**/node_modules",
+    "**/__pycache__",
+    ".git"
+  ],
+  "pythonVersion": "3.12",
+  "pythonPlatform": "Windows",
+  "extraPaths": [
+    "backend"
+  ],
+  "reportAttributeAccessIssue": false,
+  "reportGeneralTypeIssues": false,
+  "reportArgumentType": false,
+  "reportCallIssue": false,
+  "reportIndexIssue": false,
+  "reportOptionalMemberAccess": false
+}
