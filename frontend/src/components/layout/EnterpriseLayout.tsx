@@ -123,7 +123,7 @@ export const EnterpriseLayout: React.FC<EnterpriseLayoutProps> = ({
   const workflowDomainNavItems = [
     {
       label: 'Employee Onboarding',
-      path: '/workflows?domain=onboarding',
+      path: '/onboarding',
       icon: Users,
     },
     {

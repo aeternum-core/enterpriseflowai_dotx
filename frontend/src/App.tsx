@@ -16,6 +16,7 @@ import { WorkflowsPage } from './pages/WorkflowsPage';
 import { WorkflowDetailPage } from './pages/WorkflowDetailPage';
 import { PlannerPage } from './pages/PlannerPage';
 import { DemoPage } from './pages/DemoPage';
+import { EmployeeOnboardingPage } from './pages/EmployeeOnboardingPage';
 
 // Flagship Engineering & Governance Modules
 import { OperationsCanvas } from './components/canvas/OperationsCanvas';
@@ -155,7 +156,12 @@ function MainRouter() {
       );
     }
 
-    // 2. Workflows & Pipeline (and domain-specific subroutes)
+    // 2. Employee Onboarding dedicated webpage & credential provisioning hub
+    if (effectivePath.startsWith('/onboarding') || effectivePath === '/workflows?domain=onboarding') {
+      return <EmployeeOnboardingPage onNavigate={navigate} />;
+    }
+
+    // 3. Workflows & Pipeline (and domain-specific subroutes)
     if (effectivePath.startsWith('/workflows')) {
       const isCreateOpen = effectivePath.includes('create=true');
       return (

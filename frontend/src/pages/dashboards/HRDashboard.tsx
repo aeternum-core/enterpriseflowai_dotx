@@ -142,13 +142,23 @@ export const HRDashboard: React.FC<HRDashboardProps> = ({ onNavigate }) => {
           </p>
         </div>
 
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 flex items-center gap-2 transition cursor-pointer"
-        >
-          <UserPlus className="w-4 h-4" />
-          <span>New Employee Onboarding</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onNavigate('/onboarding')}
+            className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/20 flex items-center gap-2 transition cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 text-cyan-300" />
+            <span>Open Equipment, Perks & Credential Hub</span>
+          </button>
+
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="px-4 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold shadow-xs flex items-center gap-2 transition cursor-pointer"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>Quick Onboard</span>
+          </button>
+        </div>
       </div>
 
       {/* Metrics Row */}
