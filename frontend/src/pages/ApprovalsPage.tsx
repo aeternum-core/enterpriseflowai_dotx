@@ -187,7 +187,7 @@ export const ApprovalsPage: React.FC<ApprovalsPageProps> = ({ onNavigateWorkflow
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1">
                     {Object.entries(appr.details).map(([k, v]) => (
                       <div key={k} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                        <span className="text-slate-500 capitalize">{k.replace(/([A-Z])/g, ' $1')}:</span>
+                        <span className="text-slate-500 capitalize">{String(k || '').replace(/([A-Z])/g, ' $1')}:</span>
                         <span className="font-semibold text-slate-800 text-right">
                           {typeof v === 'object' ? JSON.stringify(v) : String(v)}
                         </span>

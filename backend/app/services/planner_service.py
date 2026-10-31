@@ -68,53 +68,53 @@ class CentralPlannerService:
             return [
                 {
                     "task_key": "task_onboard_parse",
-                    "title": "Parse Candidate Profile & Requirements",
+                    "title": "Parse Candidate Profile & Joining Package (₹ INR)",
                     "agent_name": "Employee Request Agent",
                     "agent_key": "employee_request_agent",
                     "execution_order": 1,
                     "depends_on": [],
                     "requires_approval": False,
-                    "description": "Extract personal details, department, title, and start date."
+                    "description": "Extract candidate credentials, Aadhaar/PAN metadata, role grade, joining bonus in ₹ INR, and start date."
                 },
                 {
                     "task_key": "task_onboard_verify_docs",
-                    "title": "Verify I-9 & Right-to-Work Documentation",
+                    "title": "Verify PAN, Aadhaar & EPFO Form 11 (DPDP Act 2023)",
                     "agent_name": "Document Verification Agent",
                     "agent_key": "doc_verification_agent",
                     "execution_order": 2,
                     "depends_on": ["task_onboard_parse"],
                     "requires_approval": False,
-                    "description": "Verify official identity records and background check clearance."
+                    "description": "Authenticate PAN via NSDL, tokenize Aadhaar in UIDAI compliant vault, and verify EPFO UAN & ESIC eligibility."
                 },
                 {
                     "task_key": "task_onboard_hr_record",
-                    "title": "Establish Official HCM Record in Workday",
+                    "title": "Establish Official HCM Record in Workday & EPFO Link",
                     "agent_name": "HR Agent",
                     "agent_key": "hr_agent",
                     "execution_order": 3,
                     "depends_on": ["task_onboard_verify_docs"],
                     "requires_approval": False,
-                    "description": "Create official employee profile in Workday HCM."
+                    "description": "Create official worker profile in Workday HCM and establish EPFO Member ID linkage."
                 },
                 {
                     "task_key": "task_onboard_it_provision",
-                    "title": "Provision Okta SSO Accounts & Security Keys",
+                    "title": "Provision Okta SSO & Allocate Corporate Equipment",
                     "agent_name": "IT Provisioning Agent",
                     "agent_key": "it_provisioning_agent",
                     "execution_order": 4,
                     "depends_on": ["task_onboard_hr_record"],
                     "requires_approval": False,
-                    "description": "Grant standard productivity suite accounts and dispatch workstation."
+                    "description": "Grant Google Workspace, GitHub Enterprise & Jira access; assign asset-tagged MacBook/ThinkPad & YubiKey."
                 },
                 {
                     "task_key": "task_onboard_notify",
-                    "title": "Notify Manager & Welcome Candidate",
+                    "title": "Credit Joining Bonus & Dispatch Credentials to Personal Inbox",
                     "agent_name": "Communication Agent",
                     "agent_key": "communication_agent",
                     "execution_order": 5,
                     "depends_on": ["task_onboard_it_provision"],
                     "requires_approval": False,
-                    "description": "Dispatch welcome briefing and calendar orientation."
+                    "description": "Schedule joining bonus disbursement via RazorpayX payroll rail and send encrypted login credentials to candidate's personal inbox."
                 }
             ]
 
@@ -123,43 +123,43 @@ class CentralPlannerService:
             return [
                 {
                     "task_key": "task_inv_intake",
-                    "title": "Invoice Ingestion & PDF Integrity Check",
+                    "title": "GST e-Invoice Intake & Rule 48(4) Format Check",
                     "agent_name": "Invoice Intake Agent",
                     "agent_key": "invoice_intake_agent",
                     "execution_order": 1,
                     "depends_on": [],
                     "requires_approval": False,
-                    "description": "Validate document digital signature, GSTIN match, and OCR fidelity."
+                    "description": "Validate document digital signature, GST e-invoice schema conformity, and OCR fidelity."
                 },
                 {
                     "task_key": "task_inv_extract",
-                    "title": "Extract Line Items, Vendor & Tax Details",
+                    "title": "Extract Line Items, 15-Digit GSTIN & 64-Char IRN",
                     "agent_name": "Document Extraction Agent",
                     "agent_key": "doc_extraction_agent",
                     "execution_order": 2,
                     "depends_on": ["task_inv_intake"],
                     "requires_approval": False,
-                    "description": "Extract structured ledger fields from invoice document."
+                    "description": "Extract structured ledger fields, 15-character supplier GSTIN, 64-hexadecimal IRN, and HSN/SAC codes."
                 },
                 {
                     "task_key": "task_inv_dedup",
-                    "title": "Historical Duplicate & Double-Billing Scan",
+                    "title": "Historical Duplicate & Double-Billing Scan (GSTR-2B)",
                     "agent_name": "Duplicate Detection Agent",
                     "agent_key": "duplicate_detection_agent",
                     "execution_order": 3,
                     "depends_on": ["task_inv_extract"],
                     "requires_approval": False,
-                    "description": "Scan 90-day ledger history to prevent duplicate disbursements."
+                    "description": "Cross-reference 90-day GSTR-2B reconciliation ledger and past ERP disbursements to prevent duplicate payments."
                 },
                 {
                     "task_key": "task_inv_validate",
-                    "title": "3-Way Match Verification (PO & Receipt)",
+                    "title": "NIC IRN Portal Verification & 3-Way Match (Sec 16(2) ITC)",
                     "agent_name": "Finance Validation Agent",
                     "agent_key": "finance_validation_agent",
                     "execution_order": 4,
                     "depends_on": ["task_inv_dedup"],
                     "requires_approval": False,
-                    "description": "Validate purchase order matching and budget allocation."
+                    "description": "Verify 64-character IRN on NIC e-Invoice Portal, confirm Section 16(2) CGST Input Tax Credit, and 3-way match against PO and GRN."
                 },
                 {
                     "task_key": "task_inv_disburse",
@@ -171,17 +171,17 @@ class CentralPlannerService:
                     "requires_approval": True, # Human Approval Gate
                     "risk_level": "HIGH" if inv_amount < 2500000 else "CRITICAL",
                     "required_role": "Finance Director" if inv_amount < 2500000 else "VP Finance",
-                    "description": "Authorize and disburse wire transfer to vendor via RBI RTGS rail."
+                    "description": "Authorize and disburse wire transfer to vendor via RBI RTGS rail with UTR generation."
                 },
                 {
                     "task_key": "task_inv_notify",
-                    "title": "Dispatch Remittance Advice to Vendor",
+                    "title": "Dispatch Remittance Advice & GST Settlement Notice",
                     "agent_name": "Communication Agent",
                     "agent_key": "communication_agent",
                     "execution_order": 6,
                     "depends_on": ["task_inv_disburse"],
                     "requires_approval": False,
-                    "description": "Email settlement confirmation and transaction ID to vendor."
+                    "description": "Email settlement confirmation, bank UTR reference, and TDS 194Q certificate to vendor."
                 }
             ]
 
@@ -191,17 +191,17 @@ class CentralPlannerService:
             return [
                 {
                     "task_key": "task_cust_classify",
-                    "title": "Intake Triage & Sentiment Analysis",
+                    "title": "Intake Triage, Urgency Scoring & Sentiment Analysis",
                     "agent_name": "Request Classification Agent",
                     "agent_key": "customer_classification_agent",
                     "execution_order": 1,
                     "depends_on": [],
                     "requires_approval": False,
-                    "description": "Identify category, urgency, customer tier, and SLA policy profile."
+                    "description": "Identify category, urgency, customer tier, and applicable SLA policy profile."
                 },
                 {
                     "task_key": "task_cust_kb",
-                    "title": "Retrieve Customer History & Match SLA Policy",
+                    "title": "Retrieve Customer SLA Policy & Escalation History",
                     "agent_name": "Knowledge & Policy Agent",
                     "agent_key": "customer_kb_agent",
                     "execution_order": 2,
@@ -211,7 +211,7 @@ class CentralPlannerService:
                 },
                 {
                     "task_key": "task_cust_resolve",
-                    "title": f"Formulate Remedy & Credit Adjustment (₹{ref_amt:,.2f})",
+                    "title": f"Evaluate RBI Harmonised TAT Delay Compensation (₹{ref_amt:,.2f})",
                     "agent_name": "Customer Resolution Agent",
                     "agent_key": "customer_resolution_agent",
                     "execution_order": 3,
@@ -219,27 +219,27 @@ class CentralPlannerService:
                     "requires_approval": req_appr,
                     "risk_level": "HIGH" if req_appr else "LOW",
                     "required_role": "Support Manager",
-                    "description": "Evaluate concession policy limit (₹15,000 auto-limit); request supervisor authorization if exceeded."
+                    "description": "Calculate RBI TAT turnaround (T+1/T+5 under DPSS.CO.PD No.629), compute suo motu ₹100/day penalty, and request manager authorization if concession exceeds ₹15,000."
                 },
                 {
                     "task_key": "task_cust_execute",
-                    "title": "Execute Zendesk Ticket Update & CRM Sync",
+                    "title": "Execute Zendesk Ticket Update & CRM Ledger Sync",
                     "agent_name": "CRM Integration Agent",
                     "agent_key": "customer_integration_agent",
                     "execution_order": 4,
                     "depends_on": ["task_cust_resolve"],
                     "requires_approval": False,
-                    "description": "Execute Zendesk Support macro, credit adjustment ledger, and CRM account sync."
+                    "description": "Execute Zendesk Support macro, credit adjustment ledger, and RazorpayX instant refund reversal."
                 },
                 {
                     "task_key": "task_cust_notify",
-                    "title": "Deliver Resolution Email & CSAT Survey",
+                    "title": "Deliver RBI TAT Compliance Notice & CSAT Survey",
                     "agent_name": "Communication Agent",
                     "agent_key": "communication_agent",
                     "execution_order": 5,
                     "depends_on": ["task_cust_execute"],
                     "requires_approval": False,
-                    "description": "Deliver formal explanation, credit memo invoice, and satisfaction survey link."
+                    "description": "Deliver formal explanation, credit memo, and customer satisfaction survey link."
                 }
             ]
 
@@ -248,17 +248,17 @@ class CentralPlannerService:
             return [
                 {
                     "task_key": "task_proc_analyze",
-                    "title": "Evaluate Competing Vendor Quotes & SLA",
+                    "title": "Evaluate Competing Vendor Quotes & MSME Registration",
                     "agent_name": "Quotation Analysis Agent",
                     "agent_key": "procurement_analysis_agent",
                     "execution_order": 1,
                     "depends_on": [],
                     "requires_approval": False,
-                    "description": "Compare pricing tiers, warranty duration, and delivery timelines."
+                    "description": "Compare pricing tiers, MSME Udyam status, GeM portal compatibility, and delivery warranty."
                 },
                 {
                     "task_key": "task_proc_execute",
-                    "title": f"Activate Vendor & Issue ERP Purchase Order (₹{po_val:,.2f})",
+                    "title": f"MSME Samadhaan 45-Day Cap & ERP Purchase Order (₹{po_val:,.2f})",
                     "agent_name": "Procurement Agent",
                     "agent_key": "procurement_execution_agent",
                     "execution_order": 2,
@@ -266,17 +266,17 @@ class CentralPlannerService:
                     "requires_approval": True,
                     "risk_level": "CRITICAL" if po_val > 5000000 or (po_val > 50000 and po_val <= 100000) else "HIGH",
                     "required_role": "Procurement Manager",
-                    "description": "Activate vendor master record and dispatch binding purchase order."
+                    "description": "Enforce MSMED Act 2006 Section 15 statutory 45-day payment cap, verify RBI FEMA bank clearance, and dispatch binding Coupa/SAP PO."
                 },
                 {
                     "task_key": "task_proc_notify",
-                    "title": "Notify Department Stakeholder & Vendor",
+                    "title": "Notify Department Stakeholder & Supplier with Binding Terms",
                     "agent_name": "Communication Agent",
                     "agent_key": "communication_agent",
                     "execution_order": 3,
                     "depends_on": ["task_proc_execute"],
                     "requires_approval": False,
-                    "description": "Send copy of signed purchase order to requisitioner and supplier."
+                    "description": "Send copy of signed purchase order and MSME payment terms schedule to requisitioner and supplier."
                 }
             ]
 
@@ -286,17 +286,17 @@ class CentralPlannerService:
                 return [
                     {
                         "task_key": "task_it_investigate",
-                        "title": "Analyze Access Scope & Threat Classification",
+                        "title": "Analyze Access Scope & Threat Classification (CERT-In)",
                         "agent_name": "Investigation Agent",
                         "agent_key": "incident_investigation_agent",
                         "execution_order": 1,
                         "depends_on": [],
                         "requires_approval": False,
-                        "description": "Evaluate target infrastructure, justification, and blast radius."
+                        "description": "Evaluate target infrastructure (Mumbai DC k8s-prod-in-west-1), justification, and blast radius under CERT-In directives."
                     },
                     {
                         "task_key": "task_it_grant_pam",
-                        "title": "Provision Ephemeral JIT ClusterAdmin Privileges",
+                        "title": "Authorize Ephemeral 4-Hour JIT ClusterAdmin Elevation",
                         "agent_name": "Identity & Access Governance Agent",
                         "agent_key": "iam_access_agent",
                         "execution_order": 2,
@@ -304,51 +304,51 @@ class CentralPlannerService:
                         "requires_approval": True,
                         "risk_level": "CRITICAL",
                         "required_role": "IT Security Admin",
-                        "description": "Authorize temporary 4-hour elevation to production Kubernetes cluster."
+                        "description": "Authorize temporary 4-hour elevation to production Kubernetes cluster in Mumbai DC."
                     },
                     {
                         "task_key": "task_it_notify",
-                        "title": "Dispatch Security Vault Audit Alert",
+                        "title": "Lock 180-Day ICT Audit Trail & Dispatch Security Vault Alert",
                         "agent_name": "Communication Agent",
                         "agent_key": "communication_agent",
                         "execution_order": 3,
                         "depends_on": ["task_it_grant_pam"],
                         "requires_approval": False,
-                        "description": "Notify SOC team and requester with ephemeral session credentials."
+                        "description": "Notify SOC team, lock audit trail under CERT-In 180-day retention mandate, and issue ephemeral session credentials."
                     }
                 ]
             else:
                 return [
                     {
                         "task_key": "task_it_investigate",
-                        "title": "Trace Microservice Logs & Root Cause Analysis",
+                        "title": "Trace Microservice Logs & Root Cause Analysis (CERT-In Mandate)",
                         "agent_name": "Investigation Agent",
                         "agent_key": "incident_investigation_agent",
                         "execution_order": 1,
                         "depends_on": [],
                         "requires_approval": False,
-                        "description": "Correlate telemetry and identify cause of service disruption."
+                        "description": "Correlate telemetry in Mumbai DC, identify cause of service disruption, and establish incident timeline."
                     },
                     {
                         "task_key": "task_it_remediate",
-                        "title": "Execute Automated Service Restart in ServiceNow",
+                        "title": "ServiceNow Automated Remediation & CERT-In 6-Hour Dispatch",
                         "agent_name": "IT Remediation Agent",
                         "agent_key": "it_remediation_agent",
                         "execution_order": 2,
                         "depends_on": ["task_it_investigate"],
                         "requires_approval": False, # Non-destructive automated remediation
                         "risk_level": "LOW",
-                        "description": "Cycle connection pool and resolve ServiceNow incident."
+                        "description": "Cycle connection pool, resync NTP with NIC/NPL, and dispatch mandatory Section 70B(6) incident notice to incident@cert-in.org.in."
                     },
                     {
                         "task_key": "task_it_notify",
-                        "title": "Dispatch Incident Post-Mortem & Resolution Notice",
+                        "title": "Dispatch Incident Post-Mortem & CERT-In Closure Notice",
                         "agent_name": "Communication Agent",
                         "agent_key": "communication_agent",
                         "execution_order": 3,
                         "depends_on": ["task_it_remediate"],
                         "requires_approval": False,
-                        "description": "Publish MTTR stats and close incident ticket."
+                        "description": "Publish MTTR stats, archive 180-day logs, and notify enterprise stakeholders."
                     }
                 ]
 

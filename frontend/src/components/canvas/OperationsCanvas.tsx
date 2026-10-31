@@ -157,25 +157,27 @@ export const OperationsCanvas: React.FC<OperationsCanvasProps> = ({
     };
   }, []);
 
-  // Launch Customer Request Resolution Scenario in Real Time
-  const handleLaunchCustomerScenario = async () => {
+  // Launch Any of the 5 Enterprise Domain Scenarios in Real Time
+  const handleLaunchScenario = async (scenarioId: string = 'customer_sla_refund') => {
     setIsLaunching(true);
     try {
       const res = await fetch('/api/demo/trigger-scenario', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ scenarioId: 'customer_sla_refund' })
+        body: JSON.stringify({ scenarioId })
       });
       const data = await res.json();
       if (data.workflow?.id) {
         await loadWorkflows(data.workflow.id);
       }
     } catch (e) {
-      console.error('Failed to launch Customer Request Resolution scenario:', e);
+      console.error('Failed to launch scenario:', e);
     } finally {
       setIsLaunching(false);
     }
   };
+
+  const handleLaunchCustomerScenario = () => handleLaunchScenario('customer_sla_refund');
 
   // Handle In-Canvas Decision
   const handleDecide = async (decision: 'APPROVED' | 'REJECTED') => {
@@ -290,16 +292,38 @@ export const OperationsCanvas: React.FC<OperationsCanvasProps> = ({
           </div>
 
           {/* Right: Quick Action Controls */}
-          <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             
+            {/* Quick Domain Launcher Select */}
+            <div className="flex items-center">
+              <select
+                onChange={(e) => {
+                  if (e.target.value) {
+                    handleLaunchScenario(e.target.value);
+                    e.target.value = '';
+                  }
+                }}
+                disabled={isLaunching}
+                defaultValue=""
+                className="bg-slate-900 border border-cyan-500/50 text-cyan-300 rounded-xl px-2.5 py-1.5 text-xs font-bold focus:outline-none focus:border-cyan-400 cursor-pointer disabled:opacity-50"
+              >
+                <option value="" disabled>⚡ Run Any Domain...</option>
+                <option value="customer_sla_refund">Domain 3: Customer Resolution (₹45,000 / RBI TAT)</option>
+                <option value="large_invoice_approval">Domain 2: GST e-Invoice (₹24.8L / Tata Comms)</option>
+                <option value="server_cluster_procurement">Domain 4: MSME Procurement (₹78.5L / Wipro)</option>
+                <option value="sev1_cloud_incident">Domain 5: IT Incident & CERT-In (Mumbai K8s)</option>
+                <option value="onboarding_executive">Domain 1: Employee Onboarding (Rahul Sharma)</option>
+              </select>
+            </div>
+
             {/* Launch Customer Request Resolution Button */}
             <button
               onClick={handleLaunchCustomerScenario}
               disabled={isLaunching}
-              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-900/30 transition disabled:opacity-50"
+              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-900/30 transition disabled:opacity-50"
             >
               <Zap className={`w-3.5 h-3.5 text-amber-300 ${isLaunching ? 'animate-spin' : ''}`} />
-              <span>{isLaunching ? 'Initializing...' : 'Run Customer Request Resolution'}</span>
+              <span>{isLaunching ? 'Running...' : 'Run Customer Resolution'}</span>
             </button>
 
             {/* Refresh Button */}

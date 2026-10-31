@@ -189,6 +189,14 @@ class ToolGateway:
             return mock_integrations.servicenow_remediate_incident(payload)
         elif tool_key in ["sendgrid_dispatch_email", "send_notification"]:
             return mock_integrations.sendgrid_dispatch_email(payload)
+        elif tool_key in ["gst_einvoice_verify_irn", "gst_irn_verification"]:
+            return mock_integrations.gst_einvoice_verify_irn(payload)
+        elif tool_key in ["msme_samadhaan_compliance_check", "msme_compliance"]:
+            return mock_integrations.msme_samadhaan_compliance_check(payload)
+        elif tool_key in ["rbi_tat_refund_calculate", "rbi_refund_calculation"]:
+            return mock_integrations.rbi_tat_refund_calculate(payload)
+        elif tool_key in ["cert_in_incident_report", "certin_incident_dispatch"]:
+            return mock_integrations.cert_in_incident_report(payload)
         else:
             # Generic simulated enterprise tool
             return {

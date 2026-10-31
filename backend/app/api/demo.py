@@ -184,7 +184,7 @@ async def trigger_demo_scenario(payload: TriggerScenarioRequest, db: Session = D
 @router.post("/demo/reset")
 async def reset_demo_database(db: Session = Depends(get_db)):
     # Clear and re-seed
-    seed_database(db)
+    seed_database(db, force=True)
     await broadcast_event("database_reset", {"message": "Database reset to initial demo state."})
     return {
         "success": True,

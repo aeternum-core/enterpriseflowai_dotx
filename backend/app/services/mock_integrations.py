@@ -187,6 +187,110 @@ class MockEnterpriseIntegrations:
             "subject": data.get("subject", "EnterpriseFlow Notification")
         }
 
+    # --- INDIAN REGULATORY COMPLIANCE TOOLS (Five Enterprise Domains) ---
+
+    # Domain 02: GST E-Invoice & IRN Portal Verification
+    @staticmethod
+    def gst_einvoice_verify_irn(data: Dict[str, Any], worker_role: str = "BUSINESS_OPERATIONS_WORKER") -> Dict[str, Any]:
+        """Validates 64-character IRN and QR code digest under Rule 48(4) CGST Act via National Informatics Centre (NIC)"""
+        fault = chaos_engine.check_and_inject("gst", worker_role)
+        if fault and not data.get("_recovering"):
+            raise RuntimeError(f"CHAOS_INJECTED: {fault['error']} - {fault['message']}")
+
+        gstin = data.get("supplier_gstin", "29AABCU9603R1ZM")
+        inv_num = data.get("invoice_number", "INV-2026-8941")
+        irn = data.get("irn") or f"{uuid.uuid4().hex}{uuid.uuid4().hex}" # 64-char hash
+        return {
+            "status": "VERIFIED_ACTIVE",
+            "service": "Mock GST e-Invoice System (NIC / GSTN Portal)",
+            "is_simulated": True,
+            "irn": irn,
+            "supplier_gstin": gstin,
+            "recipient_gstin": data.get("recipient_gstin", "29AAACE2233R1Z7"),
+            "invoice_number": inv_num,
+            "signed_qr_verified": True,
+            "itc_eligible": True,
+            "hsn_sac_code": data.get("hsn_code", "998313"),
+            "digital_signature": "Valid (NIC E-Invoice Sub-CA 2026)",
+            "statutory_compliance": "CGST Rule 48(4) Fully Compliant"
+        }
+
+    # Domain 04: MSME Samadhaan 45-Day Payment Statutory Rule
+    @staticmethod
+    def msme_samadhaan_compliance_check(data: Dict[str, Any], worker_role: str = "BUSINESS_OPERATIONS_WORKER") -> Dict[str, Any]:
+        """Enforces Section 15 (45-Day Cap) & Section 16 (3x RBI Bank Rate Compound Interest) under MSMED Act 2006"""
+        fault = chaos_engine.check_and_inject("msme", worker_role)
+        if fault and not data.get("_recovering"):
+            raise RuntimeError(f"CHAOS_INJECTED: {fault['error']} - {fault['message']}")
+
+        vendor_name = data.get("vendor_name", "Wipro Technologies Ltd")
+        udyam_reg = data.get("udyam_reg", f"UDYAM-KR-03-00{uuid.uuid4().hex[:5].upper()}")
+        invoice_age_days = int(data.get("invoice_age_days", 14))
+        is_delayed = invoice_age_days > 45
+
+        return {
+            "status": "COMPLIANCE_EVALUATED",
+            "service": "Mock MSME Samadhaan Statutory Monitor (MSMED Act 2006)",
+            "is_simulated": True,
+            "vendor_name": vendor_name,
+            "udyam_registration": udyam_reg,
+            "enterprise_category": "Medium Enterprise",
+            "statutory_payment_limit_days": 45,
+            "current_invoice_age_days": invoice_age_days,
+            "is_within_section_15_cap": not is_delayed,
+            "section_16_interest_penalty_due": 0.0 if not is_delayed else 14500.0,
+            "income_tax_43b_h_status": "DEDUCTION_ALLOWED" if not is_delayed else "DISALLOWED_FOR_CURRENT_FY"
+        }
+
+    # Domain 03: RBI Digital Payment Turnaround Time (TAT) & Suo Motu Refund Compensation
+    @staticmethod
+    def rbi_tat_refund_calculate(data: Dict[str, Any], worker_role: str = "BUSINESS_OPERATIONS_WORKER") -> Dict[str, Any]:
+        """Calculates T+1 / T+5 refund turnaround and automatic ₹100/day compensation under RBI Harmonisation Circular"""
+        fault = chaos_engine.check_and_inject("rbi", worker_role)
+        if fault and not data.get("_recovering"):
+            raise RuntimeError(f"CHAOS_INJECTED: {fault['error']} - {fault['message']}")
+
+        channel = data.get("payment_channel", "UPI_P2M")
+        delay_days = int(data.get("delay_days", 0))
+        principal_refund = float(data.get("refund_amount", 45000.0))
+        rbi_mandated_tat = "T+1 Day" if channel in ["UPI_P2P", "IMPS"] else "T+5 Days"
+        penalty_compensation = max(0, delay_days) * 100.0 # ₹100/day delay compensation
+
+        return {
+            "status": "TAT_CALCULATED",
+            "service": "Mock RBI Harmonisation of TAT Engine (DPSS.CO.PD No.629)",
+            "is_simulated": True,
+            "payment_channel": channel,
+            "mandated_tat": rbi_mandated_tat,
+            "principal_refund_amount_inr": principal_refund,
+            "delay_beyond_tat_days": delay_days,
+            "suo_motu_compensation_inr": penalty_compensation,
+            "total_payout_inr": principal_refund + penalty_compensation,
+            "regulatory_basis": "RBI Circular DPSS.CO.PD No.629/02.01.014/2019-20"
+        }
+
+    # Domain 05: CERT-In Mandatory 6-Hour Cyber Incident Report
+    @staticmethod
+    def cert_in_incident_report(data: Dict[str, Any], worker_role: str = "IT_AND_INTEGRATION_WORKER") -> Dict[str, Any]:
+        """Dispatches mandatory 6-hour cybersecurity incident report under Section 70B(6) IT Act 2000 to CERT-In"""
+        fault = chaos_engine.check_and_inject("certin", worker_role)
+        if fault and not data.get("_recovering"):
+            raise RuntimeError(f"CHAOS_INJECTED: {fault['error']} - {fault['message']}")
+
+        inc_id = data.get("incident_id", f"INC-2026-{uuid.uuid4().hex[:6].upper()}")
+        return {
+            "status": "DISPATCHED_TO_CERT_IN",
+            "service": "Mock Indian Computer Emergency Response Team (CERT-In) Reporting Bridge",
+            "is_simulated": True,
+            "incident_id": inc_id,
+            "cert_in_ticket": f"CERTIN-IND-{uuid.uuid4().hex[:8].upper()}",
+            "submission_window": "Reported within mandatory 6-hour window",
+            "designated_poc": "Chief Information Security Officer (CISO India)",
+            "ict_log_retention_status": "180-Day Rolling Logs Stored in Indian DC Jurisdiction (Compliant)",
+            "ntp_clock_sync": "Synchronized to NIC/NPL Time Server (Compliant)",
+            "statutory_mandate": "Directions under Section 70B(6) Information Technology Act, 2000"
+        }
+
 mock_integrations = MockEnterpriseIntegrations()
 
 

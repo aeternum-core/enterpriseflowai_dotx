@@ -61,16 +61,19 @@ class DocumentVerificationAgent(BaseSpecializedAgent):
             key="doc_verification_agent",
             name="Document Verification Agent",
             domain="onboarding",
-            description="Verifies identity, tax forms (W-4/I-9), right-to-work documents and certifications.",
-            system_instructions="Check completeness, validity, and compliance of submitted candidate or vendor documentation.",
+            description="Verifies Indian statutory identity (Aadhaar/PAN), EPFO Form 11, and DPDP Act 2023 consent.",
+            system_instructions="Check validity of PAN via NSDL/ITD, tokenize Aadhaar in Indian UIDAI vault, and verify EPFO UAN.",
             allowed_tools=[]
         )
 
     def execute(self, db: Session, context: Dict[str, Any], workflow_id: str, task_id: str) -> Dict[str, Any]:
         return {
             "id_verified": True,
-            "i9_compliance_check": "PASSED",
-            "right_to_work": "VERIFIED_ELIGIBLE",
+            "pan_verification": "VALID_ACTIVE_NSDL",
+            "aadhaar_vault": "UIDAI_TOKENIZED_256BIT",
+            "epfo_form_11": "SUBMITTED_AND_LINKED",
+            "dpdp_act_compliance": "CONSENT_RECORDED_COMPLIANT",
+            "right_to_work": "VERIFIED_CITIZEN_ELIGIBLE",
             "background_check_id": f"BGC-{uuid.uuid4().hex[:6].upper()}",
             "status": "ALL_DOCUMENTS_VERIFIED"
         }
@@ -227,21 +230,38 @@ class FinanceValidationAgent(BaseSpecializedAgent):
             key="finance_validation_agent",
             name="Finance Validation Agent",
             domain="invoice",
-            description="Performs 3-way matching between invoice, purchase order, and goods received.",
-            system_instructions="Verify math totals, PO tolerance thresholds, and cost center allocation.",
-            allowed_tools=[]
+            description="Performs 3-way matching and GST e-invoicing IRN/QR validation under Rule 48(4) CGST Act.",
+            system_instructions="Verify math totals, PO tolerance thresholds, GSTIN verification, and NIC IRN validity.",
+            allowed_tools=["gst_einvoice_verify_irn"]
         )
 
     def execute(self, db: Session, context: Dict[str, Any], workflow_id: str, task_id: str) -> Dict[str, Any]:
-        amount = context.get("amount", 18450.00)
+        amount = context.get("amount", 2480000.00)
         po_number = f"PO-2026-{uuid.uuid4().hex[:4].upper()}"
+
+        # Invoke GST e-invoice verification
+        gst_res = tool_gateway.invoke(
+            db=db,
+            tool_key="gst_einvoice_verify_irn",
+            agent_id=self.key,
+            agent_name=self.name,
+            workflow_id=workflow_id,
+            task_id=task_id,
+            payload={
+                "supplier_gstin": context.get("supplier_gstin", "29AABCU9603R1ZM"),
+                "invoice_number": context.get("invoice_number", "INV-2026-8941"),
+                "domain": "invoice"
+            }
+        )
+
         return {
             "po_match": True,
             "po_number": po_number,
             "variance_percent": 0.0,
             "cost_center": "CC-ENG-INFRA-401",
+            "gst_einvoice": gst_res,
             "budget_availability": "CONFIRMED_SUFFICIENT",
-            "status": "THREE_WAY_MATCH_PASSED"
+            "status": "THREE_WAY_MATCH_AND_GST_IRN_PASSED"
         }
 
 class FinanceDisbursementAgent(BaseSpecializedAgent):
@@ -342,18 +362,36 @@ class CustomerResolutionAgent(BaseSpecializedAgent):
             key="customer_resolution_agent",
             name="Customer Resolution Agent",
             domain="customer",
-            description="Applies customer policy, triggers Zendesk ticket update and resolution.",
-            system_instructions="Formulate customer remedy and resolve support ticket.",
-            allowed_tools=["zendesk_update_ticket"]
+            description="Applies customer policy, evaluates RBI digital refund TAT compliance, and updates CRM.",
+            system_instructions="Formulate customer remedy, evaluate RBI turnaround time compensation, and resolve support ticket.",
+            allowed_tools=["zendesk_update_ticket", "rbi_tat_refund_calculate"]
         )
 
     def execute(self, db: Session, context: Dict[str, Any], workflow_id: str, task_id: str) -> Dict[str, Any]:
-        refund_amount = context.get("refund_amount", 450.00)
+        refund_amount = context.get("refund_amount", 45000.00)
+
+        # 1. Evaluate RBI Digital Payment TAT compliance & compensation
+        rbi_res = tool_gateway.invoke(
+            db=db,
+            tool_key="rbi_tat_refund_calculate",
+            agent_id=self.key,
+            agent_name=self.name,
+            workflow_id=workflow_id,
+            task_id=task_id,
+            payload={
+                "payment_channel": context.get("payment_channel", "UPI_P2M"),
+                "delay_days": context.get("delay_days", 0),
+                "refund_amount": refund_amount,
+                "domain": "customer"
+            }
+        )
+
+        # 2. Update ticketing system
         payload = {
-            "ticket_id": f"ZD-EU-{uuid.uuid4().hex[:5].upper()}",
+            "ticket_id": f"ZD-IN-{uuid.uuid4().hex[:5].upper()}",
             "resolution_status": "SOLVED",
             "refund_amount": refund_amount,
-            "customer_email": context.get("customer_email", "billing@globalcorp.eu"),
+            "customer_email": context.get("customer_email", "billing@reliancedigital.in"),
             "domain": "customer"
         }
         res = tool_gateway.invoke(
@@ -367,6 +405,7 @@ class CustomerResolutionAgent(BaseSpecializedAgent):
         )
         return {
             "resolution": res,
+            "rbi_tat_compliance": rbi_res,
             "customer_response": f"Apologies for the SLA latency variance. We have issued a credit adjustment of ₹{refund_amount:,.2f} to your account via domestic instant settlement rail.",
             "status": "CUSTOMER_RESOLVED"
         }
@@ -439,14 +478,14 @@ class ProcurementExecutionAgent(BaseSpecializedAgent):
             key="procurement_execution_agent",
             name="Procurement Agent",
             domain="procurement",
-            description="Creates purchase order in Coupa and activates vendor master record upon approval.",
-            system_instructions="Issue binding purchase order and register vendor record.",
-            allowed_tools=["coupa_create_po", "coupa_activate_vendor"]
+            description="Creates purchase order in Coupa, activates vendor master record, and enforces MSMED Act 45-day statutory payment terms.",
+            system_instructions="Issue binding purchase order, register vendor record, and verify MSME Samadhaan compliance.",
+            allowed_tools=["coupa_create_po", "coupa_activate_vendor", "msme_samadhaan_compliance_check"]
         )
 
     def execute(self, db: Session, context: Dict[str, Any], workflow_id: str, task_id: str) -> Dict[str, Any]:
-        vendor = context.get("recommended_vendor") or context.get("vendor_name", "NVIDIA Enterprise Cloud")
-        total_value = float(context.get("total_value", 78500.00))
+        vendor = context.get("recommended_vendor") or context.get("vendor_name", "Wipro Technologies Ltd")
+        total_value = float(context.get("total_value", 7850000.00))
 
         # 1. Activate vendor
         act_res = tool_gateway.invoke(
@@ -459,7 +498,18 @@ class ProcurementExecutionAgent(BaseSpecializedAgent):
             payload={"vendor_name": vendor, "domain": "procurement"}
         )
 
-        # 2. Issue PO
+        # 2. Check MSMED Act 45-day compliance
+        msme_res = tool_gateway.invoke(
+            db=db,
+            tool_key="msme_samadhaan_compliance_check",
+            agent_id=self.key,
+            agent_name=self.name,
+            workflow_id=workflow_id,
+            task_id=task_id,
+            payload={"vendor_name": vendor, "domain": "procurement", "invoice_age_days": 10}
+        )
+
+        # 3. Issue PO
         po_res = tool_gateway.invoke(
             db=db,
             tool_key="coupa_create_po",
@@ -472,6 +522,7 @@ class ProcurementExecutionAgent(BaseSpecializedAgent):
 
         return {
             "vendor_activation": act_res,
+            "msme_compliance": msme_res,
             "purchase_order": po_res,
             "status": "PO_DISPATCHED_TO_VENDOR"
         }
@@ -494,16 +545,16 @@ class IncidentInvestigationAgent(BaseSpecializedAgent):
         if is_access:
             return {
                 "incident_type": "PRIVILEGED_ACCESS_REQUEST",
-                "target_system": "Production Kubernetes Cluster (k8s-prod-us-east-1)",
-                "access_tier": "ClusterAdmin_JIT",
+                "target_system": "Production Kubernetes Cluster (k8s-prod-in-west-1, Mumbai DC)",
+                "access_tier": "ClusterAdmin_JIT_4Hr",
                 "requester": context.get("requester_user", "alex.rivera@enterpriseflow.corp"),
-                "justification": "Emergency hotfix patching for zero-day memory leak in auth proxy",
+                "justification": "Emergency hotfix patching for zero-day memory leak in auth proxy (CERT-In Ticket IN-2026-981)",
                 "status": "INVESTIGATION_COMPLETE"
             }
         else:
             return {
                 "incident_type": "SERVICE_DEGRADATION",
-                "target_system": "PostgreSQL Database Primary (db-prod-01)",
+                "target_system": "PostgreSQL Database Primary (db-prod-mumbai-01)",
                 "anomaly": "Deadlocked connection pool at 99.8% capacity",
                 "recommended_action": "Restart container pod and cycle connection pool",
                 "status": "INVESTIGATION_COMPLETE"
@@ -515,12 +566,13 @@ class ITRemediationAgent(BaseSpecializedAgent):
             key="it_remediation_agent",
             name="IT Remediation Agent",
             domain="it_incident",
-            description="Executes automated ServiceNow incident remediation.",
-            system_instructions="Perform automated corrective action in ITSM.",
-            allowed_tools=["servicenow_remediate_incident"]
+            description="Executes automated ServiceNow incident remediation and dispatches mandatory CERT-In 6-hour disclosure under Section 70B(6) IT Act 2000.",
+            system_instructions="Perform automated corrective action in ITSM and dispatch statutory CERT-In report.",
+            allowed_tools=["servicenow_remediate_incident", "cert_in_incident_report"]
         )
 
     def execute(self, db: Session, context: Dict[str, Any], workflow_id: str, task_id: str) -> Dict[str, Any]:
+        # 1. Remediate service
         payload = {
             "action": context.get("recommended_action", "Cycled pool and flushed stale connections"),
             "domain": "it_incident"
@@ -534,9 +586,25 @@ class ITRemediationAgent(BaseSpecializedAgent):
             task_id=task_id,
             payload=payload
         )
+
+        # 2. Dispatch CERT-In 6-hour statutory disclosure
+        certin_res = tool_gateway.invoke(
+            db=db,
+            tool_key="cert_in_incident_report",
+            agent_id=self.key,
+            agent_name=self.name,
+            workflow_id=workflow_id,
+            task_id=task_id,
+            payload={
+                "incident_id": context.get("incident_id", f"INC-2026-{uuid.uuid4().hex[:6].upper()}"),
+                "domain": "it_incident"
+            }
+        )
+
         return {
             "remediation_result": res,
-            "status": "INCIDENT_REMEDIATED"
+            "cert_in_statutory_report": certin_res,
+            "status": "INCIDENT_REMEDIATED_AND_CERT_IN_REPORTED"
         }
 
 class IAMAccessAgent(BaseSpecializedAgent):
