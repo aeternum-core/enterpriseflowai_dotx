@@ -510,3 +510,4 @@ export const ITIncidentAccessPage: React.FC<ITIncidentAccessPageProps> = ({ onNa
     </div>
   );
 };
+

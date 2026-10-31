@@ -62,6 +62,8 @@ export interface Workflow {
   id: string;
   title: string;
   type: WorkflowType;
+  domain?: string;
+  rawInput?: string;
   submittedByUserId: string;
   submittedByName: string;
   submittedByRole: UserRole;

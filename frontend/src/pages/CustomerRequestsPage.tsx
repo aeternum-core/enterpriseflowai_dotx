@@ -679,3 +679,4 @@ export const CustomerRequestsPage: React.FC<CustomerRequestsPageProps> = ({ onNa
     </div>
   );
 };
+

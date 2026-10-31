@@ -695,3 +695,4 @@ export const ProcurementVendorsPage: React.FC<ProcurementVendorsPageProps> = ({ 
     </div>
   );
 };
+

@@ -114,3 +114,35 @@ def test_universal_decide_endpoint(client):
     assert r_decide.status_code == 200
     assert r_decide.json()["status"] == "APPROVED"
     assert r_decide.json()["workflow_status"] == "COMPLETED"
+
+def test_central_planner_interactive_endpoints(client):
+    """Verify Central Planner decompose, telemetry, and self-heal endpoints"""
+    # 1. Telemetry
+    r_tel = client.get("/api/planner/telemetry")
+    assert r_tel.status_code == 200
+    tel = r_tel.json()
+    assert tel["plannerState"] == "ACTIVE_SUPERVISOR"
+    assert len(tel["swarms"]) == 5
+
+    # 2. Decompose
+    r_dec = client.post("/api/planner/decompose", json={
+        "prompt": "Onboard Principal Site Reliability Engineer with ₹28,50,000 CTC in Bengaluru office",
+        "strictMode": True
+    })
+    assert r_dec.status_code == 200
+    dec = r_dec.json()
+    assert dec["success"] is True
+    assert dec["dagSummary"]["isValidDAG"] is True
+    assert len(dec["nodes"]) >= 3
+    assert len(dec["reasoningSteps"]) == 5
+
+    # 3. Self-healing simulation
+    r_heal = client.post("/api/planner/self-heal", json={
+        "failureType": "HTTP_409_USERNAME_COLLISION",
+        "prompt": "Onboard Principal Site Reliability Engineer with ₹28,50,000 CTC in Bengaluru office"
+    })
+    assert r_heal.status_code == 200
+    heal = r_heal.json()
+    assert heal["success"] is True
+    assert heal["replanStatus"] == "RECOVERY_COMPLETE_100_PERCENT"
+    assert heal["healedTaskCount"] > heal["originalTaskCount"]
