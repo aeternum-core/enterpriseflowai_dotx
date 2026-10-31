@@ -133,17 +133,17 @@ export const EnterpriseLayout: React.FC<EnterpriseLayoutProps> = ({
     },
     {
       label: 'Customer Requests',
-      path: '/workflows?domain=customer',
+      path: '/customer',
       icon: MessageSquare,
     },
     {
       label: 'Procurement & Vendors',
-      path: '/workflows?domain=procurement',
+      path: '/procurement',
       icon: ShoppingCart,
     },
     {
       label: 'IT Incident & Access',
-      path: '/workflows?domain=it_incident',
+      path: '/it-incident',
       icon: ShieldAlert,
     }
   ];
@@ -511,7 +511,13 @@ export const EnterpriseLayout: React.FC<EnterpriseLayoutProps> = ({
               <div className="space-y-0.5">
                 {workflowDomainNavItems.map((item) => {
                   const Icon = item.icon;
-                  const isActive = currentPath === item.path;
+                  const isActive = 
+                    currentPath === item.path || 
+                    (item.path !== '/' && currentPath.startsWith(item.path)) ||
+                    (item.path === '/customer' && currentPath.includes('domain=customer')) ||
+                    (item.path === '/procurement' && currentPath.includes('domain=procurement')) ||
+                    (item.path === '/it-incident' && currentPath.includes('domain=it_incident')) ||
+                    (item.path === '/onboarding' && currentPath.includes('domain=onboarding'));
                   return (
                     <button
                       key={item.path}

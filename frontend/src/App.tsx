@@ -17,6 +17,9 @@ import { WorkflowDetailPage } from './pages/WorkflowDetailPage';
 import { PlannerPage } from './pages/PlannerPage';
 import { DemoPage } from './pages/DemoPage';
 import { EmployeeOnboardingPage } from './pages/EmployeeOnboardingPage';
+import { CustomerRequestsPage } from './pages/CustomerRequestsPage';
+import { ProcurementVendorsPage } from './pages/ProcurementVendorsPage';
+import { ITIncidentAccessPage } from './pages/ITIncidentAccessPage';
 
 // Flagship Engineering & Governance Modules
 import { OperationsCanvas } from './components/canvas/OperationsCanvas';
@@ -159,6 +162,21 @@ function MainRouter() {
     // 2. Employee Onboarding dedicated webpage & credential provisioning hub
     if (effectivePath.startsWith('/onboarding') || effectivePath === '/workflows?domain=onboarding') {
       return <EmployeeOnboardingPage onNavigate={navigate} />;
+    }
+
+    // 2b. Customer Requests Resolution & RBI Harmonisation of TAT Sentinel
+    if (effectivePath.startsWith('/customer') || effectivePath === '/workflows?domain=customer') {
+      return <CustomerRequestsPage onNavigate={navigate} />;
+    }
+
+    // 2c. Procurement & Vendor Master (MSMED Act 2006 & GeM Integration)
+    if (effectivePath.startsWith('/procurement') || effectivePath === '/workflows?domain=procurement') {
+      return <ProcurementVendorsPage onNavigate={navigate} />;
+    }
+
+    // 2d. IT Incident & PAM Access Control (CERT-In 6-Hour Disclosure & JIT Elevation)
+    if (effectivePath.startsWith('/it-incident') || effectivePath === '/workflows?domain=it_incident') {
+      return <ITIncidentAccessPage onNavigate={navigate} />;
     }
 
     // 3. Workflows & Pipeline (and domain-specific subroutes)
