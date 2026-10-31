@@ -49,3 +49,4 @@ export const LiveIndiaClock: React.FC<{ className?: string; compact?: boolean }>
     </div>
   );
 };
+
