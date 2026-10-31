@@ -10,6 +10,7 @@ from app.core.database import get_db
 from app.models.workflow import Workflow, WorkflowTask
 from app.services.workflow_engine import workflow_engine
 from app.services.audit_service import audit_service
+from app.services.email_service import email_service
 from app.api.auth import broadcast_event
 
 router = APIRouter(prefix="/onboarding", tags=["Employee Onboarding"])
@@ -283,6 +284,25 @@ async def provision_employee_onboarding(
         "designation": p_info.designation,
         "summary": "Official welcome package, corporate SSO credentials, hardware shipment tracking, and first-day orientation schedule."
     }
+
+    # Attempt Real-World SMTP Email Delivery to Employee's Personal Inbox
+    real_email_res = email_service.send_welcome_email(
+        recipient_email=p_info.personalEmail,
+        employee_name=p_info.fullName,
+        corporate_email=corporate_email,
+        temporary_password=temporary_password,
+        employee_id=emp_id,
+        joining_bonus_inr=perks.joiningBonusInr,
+        laptop_model=equip.laptopModel,
+        courier_tracking_id=tracking_id,
+        reporting_manager=p_info.reportingManager,
+        date_of_joining=p_info.dateOfJoining,
+        department=p_info.department,
+        designation=p_info.designation,
+        work_location=p_info.workLocation
+    )
+    email_message["realDispatchStatus"] = real_email_res.get("status")
+    email_message["realDispatchMessage"] = real_email_res.get("message")
     personal_inbox_messages.insert(0, email_message)
 
     # 5. Start Multi-Agent Autonomous Onboarding Workflow
@@ -315,7 +335,8 @@ async def provision_employee_onboarding(
             "personal_email": p_info.personalEmail,
             "joining_bonus_inr": perks.joiningBonusInr,
             "courier_tracking": tracking_id,
-            "workflow_id": wf.id
+            "workflow_id": wf.id,
+            "real_email_status": real_email_res.get("status")
         },
         execution_result="SUCCESS"
     )
@@ -340,6 +361,101 @@ async def provision_employee_onboarding(
         "equipment": full_equipment,
         "perks": full_perks,
         "workflowId": wf.id,
-        "dispatchedEmail": email_message
+        "dispatchedEmail": email_message,
+        "realEmailDelivery": real_email_res
     }
+
+class SmtpConfigRequest(BaseModel):
+    smtpHost: str = "smtp.gmail.com"
+    smtpPort: int = 587
+    smtpUser: str
+    smtpPassword: str
+    smtpFromEmail: Optional[str] = None
+    smtpFromName: Optional[str] = "EnterpriseFlow People Operations"
+
+@router.get("/smtp-status")
+def get_smtp_status():
+    config = email_service.get_smtp_config()
+    return {
+        "isConfigured": config["is_configured"],
+        "smtpHost": config["smtp_host"] or "smtp.gmail.com",
+        "smtpPort": config["smtp_port"],
+        "smtpUser": config["smtp_user"] or "Not Configured",
+        "smtpFromEmail": config["smtp_from_email"] or "Not Configured",
+        "smtpFromName": config["smtp_from_name"],
+        "requiredCredentials": [
+            {
+                "field": "SMTP_USER",
+                "label": "Company Email Address",
+                "example": "careers@yourcompany.com or hr-onboarding@yourcompany.com",
+                "description": "The sender email address from which the welcome package is sent."
+            },
+            {
+                "field": "SMTP_PASSWORD",
+                "label": "App Password (16-characters)",
+                "example": "abcd efgh ijkl mnop",
+                "description": "For Gmail: Generated under myaccount.google.com -> Security -> 2-Step Verification -> App Passwords. For Outlook: Standard password or App Password."
+            },
+            {
+                "field": "SMTP_HOST",
+                "label": "SMTP Server Host",
+                "example": "smtp.gmail.com (Gmail) or smtp.office365.com (Outlook/M365) or smtp.sendgrid.net",
+                "description": "Hostname of your company mail provider."
+            },
+            {
+                "field": "SMTP_PORT",
+                "label": "SMTP Port",
+                "example": "587 (TLS standard) or 465 (SSL)",
+                "description": "Port used for secure SMTP transmission."
+            }
+        ]
+    }
+
+@router.post("/configure-smtp")
+def configure_smtp(payload: SmtpConfigRequest):
+    import os
+    os.environ["SMTP_HOST"] = payload.smtpHost
+    os.environ["SMTP_PORT"] = str(payload.smtpPort)
+    os.environ["SMTP_USER"] = payload.smtpUser
+    os.environ["SMTP_PASSWORD"] = payload.smtpPassword
+    os.environ["SMTP_FROM_EMAIL"] = payload.smtpFromEmail or payload.smtpUser
+    os.environ["SMTP_FROM_NAME"] = payload.smtpFromName or "EnterpriseFlow People Operations"
+    return {
+        "success": True,
+        "message": f"SMTP credentials updated for {payload.smtpUser} on {payload.smtpHost}:{payload.smtpPort}!"
+    }
+
+class DirectSendEmailRequest(BaseModel):
+    recipientEmail: str
+    employeeName: str = "Rahul Verma"
+    corporateEmail: str = "rahul.verma@enterpriseflow.corp"
+    temporaryPassword: str = "TempPass#2026@EF"
+    employeeId: str = "EF-IN-9812"
+    joiningBonusInr: float = 250000.0
+    laptopModel: str = 'Apple MacBook Pro 16" (M3 Max, 36GB RAM, 1TB SSD)'
+    courierTrackingId: str = "BD-IN-98214412"
+    reportingManager: str = "Alexander Sterling"
+    dateOfJoining: str = "2026-11-15"
+    department: str = "Cloud & Distributed Systems"
+    designation: str = "Principal Cloud Infrastructure Architect"
+    workLocation: str = "Bengaluru Tech Corridor"
+
+@router.post("/send-real-email")
+def send_real_email_direct(payload: DirectSendEmailRequest):
+    res = email_service.send_welcome_email(
+        recipient_email=payload.recipientEmail,
+        employee_name=payload.employeeName,
+        corporate_email=payload.corporateEmail,
+        temporary_password=payload.temporaryPassword,
+        employee_id=payload.employeeId,
+        joining_bonus_inr=payload.joiningBonusInr,
+        laptop_model=payload.laptopModel,
+        courier_tracking_id=payload.courierTrackingId,
+        reporting_manager=payload.reportingManager,
+        date_of_joining=payload.dateOfJoining,
+        department=payload.department,
+        designation=payload.designation,
+        work_location=payload.workLocation
+    )
+    return res
 

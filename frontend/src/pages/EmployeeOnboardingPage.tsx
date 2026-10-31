@@ -26,6 +26,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { RealEmailModal } from '../components/onboarding/RealEmailModal';
 
 interface EmployeeOnboardingPageProps {
   onNavigate: (path: string) => void;
@@ -33,6 +34,7 @@ interface EmployeeOnboardingPageProps {
 
 export const EmployeeOnboardingPage: React.FC<EmployeeOnboardingPageProps> = ({ onNavigate }) => {
   const { user } = useAuth();
+  const [showRealEmailModal, setShowRealEmailModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'wizard' | 'mailbox' | 'roster'>('wizard');
 
   // Form State: Employee Personal Information
@@ -305,6 +307,14 @@ export const EmployeeOnboardingPage: React.FC<EmployeeOnboardingPageProps> = ({ 
           >
             <Building className="w-4 h-4 text-purple-400" />
             <span>Onboarded Personnel & Asset Roster ({rosterRecords.length})</span>
+          </button>
+
+          <button
+            onClick={() => setShowRealEmailModal(true)}
+            className="px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md shadow-blue-500/20"
+          >
+            <Send className="w-4 h-4 text-cyan-300" />
+            <span>Dispatch Real Email via SMTP</span>
           </button>
         </div>
       </div>
@@ -1185,6 +1195,15 @@ export const EmployeeOnboardingPage: React.FC<EmployeeOnboardingPageProps> = ({ 
         </div>
       )}
 
+      <RealEmailModal
+        isOpen={showRealEmailModal}
+        onClose={() => setShowRealEmailModal(false)}
+        candidateName={fullName}
+        candidatePersonalEmail={personalEmail}
+        corporateEmail={generatedEmail}
+        joiningBonusInr={parseFloat(joiningBonusInr) || 250000}
+        laptopModel={laptopModel}
+      />
     </div>
   );
 };
